@@ -20,6 +20,10 @@
   const metaCache = new Map(); // blob sha -> parsed meta
   const pending = new Map();   // slug -> { expect, since }
   let busy = false;
+  const RESULTS_CONFIG = 'assets/results-config.json';
+  let resultsEndpoint = null;  // public web-app URL committed in assets/results-config.json
+  let results = null;          // null = not loaded; otherwise Map(student slug -> attempts[])
+  let resultsError = null;
 
   /* ---------------- storage ---------------- */
   const store = {
@@ -139,8 +143,10 @@
     const { treeSha } = await head();
     const tree = await gh(`${R()}/git/trees/${treeSha}?recursive=1`);
     const map = new Map();
+    let configSha = null;
     for (const e of tree.tree) {
       if (e.type !== 'blob') continue;
+      if (e.path === RESULTS_CONFIG) configSha = e.sha;
       const m = e.path.match(/^s\/([^/]+)\/(.+)$/);
       if (!m) continue;
       const s = map.get(m[1]) || { slug: m[1], files: [] };
@@ -154,9 +160,13 @@
       try {
         if (!metaCache.has(s.metaSha)) metaCache.set(s.metaSha, JSON.parse(await readBlob(s.metaSha)));
         const meta = metaCache.get(s.metaSha);
-        Object.assign(s, { name: meta.name, createdAt: meta.createdAt, updatedAt: meta.updatedAt, fileName: meta.fileName });
+        Object.assign(s, { name: meta.name, createdAt: meta.createdAt, updatedAt: meta.updatedAt, fileName: meta.fileName, aliases: Array.isArray(meta.aliases) ? meta.aliases : [] });
       } catch { /* unreadable meta: fall back to slug */ }
     });
+    resultsEndpoint = null;
+    if (configSha) {
+      try { const c = JSON.parse(await readBlob(configSha)); if (typeof c.endpoint === 'string' && /^https:\/\//.test(c.endpoint)) resultsEndpoint = c.endpoint; } catch { /* ignore */ }
+    }
     for (const s of list) s.name = s.name || s.slug;
     list.sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')) || a.name.localeCompare(b.name));
     students = list;
@@ -180,12 +190,21 @@
   }
   const linkFor = (slug) => `${SITE_BASE}${STUDENT_DIR}/${slug}/`;
 
+  const TRACKER_TAG = '<script src="../../assets/results.js" defer></script>';
   function prepareHtml(html) {
+    let out = html;
     const tag = '<meta name="robots" content="noindex, nofollow">';
-    if (/<meta[^>]+name=["']?robots/i.test(html)) return html;
-    if (/<head(\s[^>]*)?>/i.test(html)) return html.replace(/<head(\s[^>]*)?>/i, (m) => `${m}\n${tag}`);
-    if (/<html(\s[^>]*)?>/i.test(html)) return html.replace(/<html(\s[^>]*)?>/i, (m) => `${m}\n<head>${tag}</head>`);
-    return `${tag}\n${html}`;
+    if (!/<meta[^>]+name=["']?robots/i.test(out)) {
+      if (/<head(\s[^>]*)?>/i.test(out)) out = out.replace(/<head(\s[^>]*)?>/i, (m) => `${m}\n${tag}`);
+      else if (/<html(\s[^>]*)?>/i.test(out)) out = out.replace(/<html(\s[^>]*)?>/i, (m) => `${m}\n<head>${tag}</head>`);
+      else out = `${tag}\n${out}`;
+    }
+    // Results tracker: reports scores and wrong answers to the tutor's Google Sheet.
+    if (!/assets\/results\.js/.test(out)) {
+      const i = out.toLowerCase().lastIndexOf('</body>');
+      out = i >= 0 ? `${out.slice(0, i)}${TRACKER_TAG}\n${out.slice(i)}` : `${out}\n${TRACKER_TAG}\n`;
+    }
+    return out;
   }
 
   const metaJson = (m) => JSON.stringify(m, null, 2) + '\n';
@@ -213,7 +232,7 @@
     return text;
   }
 
-  async function copy(text) {
+  async function copy(text, msg = 'Link copied') {
     try { await navigator.clipboard.writeText(text); }
     catch {
       const ta = document.createElement('textarea');
@@ -221,7 +240,7 @@
       document.body.appendChild(ta); ta.select();
       try { document.execCommand('copy'); } finally { ta.remove(); }
     }
-    toast('Link copied');
+    toast(msg);
   }
 
   /* ---------------- toasts ---------------- */
@@ -308,6 +327,7 @@
     upload: '<path d="M12 16V4M7 9l5-5 5 5M5 20h14"/>',
     file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+    chart: '<path d="M4 20V11M10 20V5M16 20v-6M21 20H3"/>',
   };
   const icon = (n) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]}</svg>`;
 
@@ -373,6 +393,12 @@
     try {
       await loadStudents();
       renderList();
+      if (resultsReady()) {
+        loadResults().then(() => {
+          renderList();
+          if (resultsError && !quiet) toast(resultsError, 'error');
+        });
+      }
     } catch (e) {
       if (e.status === 401) { signOut(); toast(e.message, 'error'); return; }
       list.innerHTML = `<div class="empty empty-error">${esc(e.message)} <button class="btn btn-ghost btn-sm" id="retry">Try again</button></div>`;
@@ -392,6 +418,8 @@
     const q = $('#search').value.trim().toLowerCase();
     const shown = students.filter((s) => !q || s.name.toLowerCase().includes(q) || s.slug.includes(q));
     $('#count').textContent = students.length === 1 ? '1 student' : `${students.length} students`;
+    $('#results-btn-label').textContent = resultsReady() ? 'Results settings' : 'Turn on results';
+    $('#results-btn').classList.toggle('btn-attn', !resultsReady());
     const list = $('#student-list');
     if (!students.length) {
       list.innerHTML = `<div class="empty"><strong>No student pages yet.</strong><br>Add the first one with the form.</div>`;
@@ -407,9 +435,11 @@
           <div class="row-title"><h3>${esc(s.name)}</h3>${statusBadge(s.slug)}</div>
           <a class="row-link" href="${esc(linkFor(s.slug))}" target="_blank" rel="noopener">${esc(linkFor(s.slug).replace(/^https?:\/\//, ''))}</a>
           <p class="row-meta">Updated ${esc(fmtDate(s.updatedAt))}${s.fileName ? ` · ${esc(s.fileName)}` : ''}${s.size != null ? ` · ${esc(fmtSize(s.size))}` : ''}</p>
+          ${resultsLine(s)}
         </div>
         <div class="row-actions">
-          <button class="btn btn-soft btn-sm" data-act="copy">${icon('copy')}<span>Copy link</span></button>
+          <button class="btn btn-soft btn-sm" data-act="results">${icon('chart')}<span>Results</span></button>
+          <button class="btn btn-ghost btn-sm" data-act="copy">${icon('copy')}<span>Copy link</span></button>
           <button class="btn btn-ghost btn-sm" data-act="replace">${icon('swap')}<span>Replace</span></button>
           <div class="menu">
             <button class="icon-btn" data-act="menu" aria-haspopup="true" aria-expanded="false" aria-label="More actions for ${esc(s.name)}">${icon('more')}</button>
@@ -462,6 +492,248 @@
     if (!active) { clearInterval(pollTimer); pollTimer = null; }
   }
 
+  /* ---------------- results (tutor's Google Sheet) ---------------- */
+  const resultsReady = () => !!(resultsEndpoint && cfg && cfg.resultsKey);
+  const KEY_RE = /^[A-Za-z0-9_-]{12,64}$/;
+
+  function saveCfg() {
+    let remembered = false;
+    try { remembered = !!localStorage.getItem(STORE_KEY); } catch { /* ignore */ }
+    store.set(cfg, remembered);
+  }
+
+  async function fetchResults(url, key) {
+    let data;
+    try {
+      const res = await fetch(`${url}?key=${encodeURIComponent(key)}&t=${Date.now()}`, { cache: 'no-store' });
+      data = await res.json();
+    } catch {
+      throw new Error('Could not read the results sheet. In Apps Script, check the deployment says “Who has access: Anyone”.');
+    }
+    if (!data || !data.ok) {
+      throw new Error(data && data.error === 'bad key'
+        ? 'The results key does not match the one in your Apps Script code.'
+        : 'That address did not answer like the Bridgeway results script.');
+    }
+    return data.rows || [];
+  }
+
+  function normAttempt(r) {
+    if (!r || typeof r.student !== 'string') return null;
+    const n = (v) => (v === '' || v == null || !isFinite(Number(v)) ? null : Number(v));
+    const total = n(r.total);
+    return {
+      student: r.student,
+      game: String(r.game || 'Game'),
+      page: String(r.page || ''),
+      score: n(r.score),
+      total: total && total > 0 ? total : null,
+      time: Date.parse(r.at) || Date.parse(r.received) || 0,
+      missed: Array.isArray(r.missed) ? r.missed.map(String) : [],
+      mistakes: Array.isArray(r.mistakes) ? r.mistakes.filter((m) => m && typeof m === 'object') : [],
+    };
+  }
+
+  async function loadResults() {
+    if (!resultsReady()) { results = null; return; }
+    try {
+      const rows = await fetchResults(resultsEndpoint, cfg.resultsKey);
+      const map = new Map();
+      for (const r of rows) {
+        const a = normAttempt(r);
+        if (!a) continue;
+        if (!map.has(a.student)) map.set(a.student, []);
+        map.get(a.student).push(a);
+      }
+      results = map;
+      resultsError = null;
+    } catch (e) {
+      resultsError = e.message;
+    }
+  }
+
+  function attemptsFor(s) {
+    if (!results) return [];
+    return [s.slug, ...(s.aliases || [])].flatMap((k) => results.get(k) || []).sort((a, b) => b.time - a.time);
+  }
+  const scoreLabel = (a) => (a.score == null ? '—' : a.total ? `${a.score}/${a.total}` : `${a.score} right`);
+  function scoreClass(a) {
+    if (a.score == null || !a.total) return 'score-plain';
+    const p = a.score / a.total;
+    return p >= 0.8 ? 'score-good' : p >= 0.5 ? 'score-ok' : 'score-low';
+  }
+  function ago(t) {
+    if (!t) return '';
+    const m = (Date.now() - t) / 60000;
+    if (m < 1) return 'just now';
+    if (m < 60) return `${Math.round(m)} min ago`;
+    if (m < 60 * 24) return `${Math.round(m / 60)} h ago`;
+    const d = Math.round(m / 60 / 24);
+    return d < 7 ? `${d} day${d === 1 ? '' : 's'} ago` : fmtDate(new Date(t).toISOString());
+  }
+
+  function resultsLine(s) {
+    if (!resultsReady() || !results) return '';
+    const list = attemptsFor(s);
+    if (!list.length) return '<p class="row-results muted">No games finished yet</p>';
+    const a = list[0];
+    return `<p class="row-results"><span class="score ${scoreClass(a)}">${esc(scoreLabel(a))}</span>
+      <span>${esc(a.game)} · ${esc(ago(a.time))} · ${list.length} game${list.length === 1 ? '' : 's'}</span></p>`;
+  }
+
+  function attemptHtml(a, open) {
+    const useMistakes = a.mistakes.length && a.mistakes.length >= a.missed.length;
+    const items = useMistakes
+      ? a.mistakes.map((m) => `<li><span class="wl-q">${esc(m.q || m.note || 'Question')}</span>
+          ${m.chose ? `<span class="wl-chose">Chose <b>${esc(m.chose)}</b></span>` : ''}
+          ${m.answer ? `<span class="wl-ans">Answer <b>${esc(m.answer)}</b></span>` : m.note && m.q ? `<span class="wl-note">${esc(m.note)}</span>` : ''}</li>`)
+      : a.missed.map((t) => `<li><span class="wl-q">${esc(t)}</span></li>`);
+    return `<details class="attempt"${open && items.length ? ' open' : ''}>
+      <summary><span class="score ${scoreClass(a)}">${esc(scoreLabel(a))}</span>
+        <span class="attempt-game">${esc(a.game)}</span>
+        <span class="attempt-when">${a.time ? esc(fmtDate(new Date(a.time).toISOString())) : ''}</span></summary>
+      <div class="attempt-body">
+        ${items.length ? `<p class="attempt-sub">Didn’t get right (${items.length})</p><ul class="wrong-list">${items.join('')}</ul>`
+          : '<p class="attempt-sub all-right">Everything right! 🎉</p>'}
+        ${a.page ? `<p class="hint">From: ${esc(a.page)}</p>` : ''}
+      </div>
+    </details>`;
+  }
+
+  function resultsSummary(list) {
+    const scored = list.filter((a) => a.total);
+    const avg = scored.length ? Math.round(scored.reduce((t, a) => t + a.score / a.total, 0) / scored.length * 100) : null;
+    const byGame = new Map();
+    for (const a of scored) {
+      const g = byGame.get(a.game) || { n: 0, sum: 0 };
+      g.n++; g.sum += a.score / a.total;
+      byGame.set(a.game, g);
+    }
+    const weakest = [...byGame.entries()].map(([game, g]) => ({ game, p: g.sum / g.n })).filter((g) => g.p < 0.8)
+      .sort((x, y) => x.p - y.p).slice(0, 3);
+    return `<div class="res-stats">
+        <div><strong>${list.length}</strong><span>games finished</span></div>
+        <div><strong>${avg == null ? '—' : `${avg}%`}</strong><span>average score</span></div>
+        <div><strong>${esc(ago(list[0].time))}</strong><span>last played</span></div>
+      </div>
+      ${weakest.length ? `<p class="res-focus"><b>Needs practice:</b> ${weakest.map((g) => `${esc(g.game)} (${Math.round(g.p * 100)}%)`).join(', ')}</p>` : ''}`;
+  }
+
+  function openResults(s) {
+    const body = document.createElement('div');
+    body.className = 'results';
+    const list = attemptsFor(s);
+    if (resultsError) body.innerHTML = `<p class="modal-error">${esc(resultsError)}</p>`;
+    if (!list.length) {
+      body.insertAdjacentHTML('beforeend', `<div class="empty">No games finished yet. Results show up here a few seconds after ${esc(s.name)} finishes a game.</div>`);
+    } else {
+      body.insertAdjacentHTML('beforeend', resultsSummary(list) + list.map((a, i) => attemptHtml(a, i < 2)).join(''));
+    }
+    return modal({ title: `${s.name} — results`, body, confirm: '', cancel: 'Close', wide: true });
+  }
+
+  function appsScript(key) {
+    return `// Bridgeway Tutors — results sheet. Paste this into Extensions → Apps Script.
+const ADMIN_KEY = '${key}'; // the admin page needs this key to read results
+const SHEET_NAME = 'Results';
+const HEADERS = ['Received', 'Student link', 'Page', 'Game', 'Score', 'Out of', 'Wrong answers', 'Details (used by admin page)', 'Finished at'];
+
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const d = JSON.parse(e.postData.contents);
+    if (!/^[a-z0-9-]{1,100}$/.test(String(d.student || ''))) return reply_({ ok: false });
+    const mistakes = (d.mistakes || []).slice(0, 100);
+    const missed = (d.missed || []).slice(0, 100);
+    const readable = mistakes.length
+      ? mistakes.map(function (m) { return [m.q, m.chose ? 'chose ' + m.chose : '', m.answer ? 'answer ' + m.answer : ''].filter(String).join(' | '); })
+      : missed;
+    sheet_().appendRow([new Date(), d.student, text_(d.page), text_(d.game), num_(d.score), num_(d.total),
+      text_(readable.join('\\n')), text_(JSON.stringify({ missed: missed, mistakes: mistakes })), text_(d.at)]);
+    return reply_({ ok: true });
+  } catch (err) {
+    return reply_({ ok: false });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function doGet(e) {
+  if (String((e.parameter || {}).key || '') !== ADMIN_KEY) return reply_({ ok: false, error: 'bad key' });
+  const rows = sheet_().getDataRange().getValues().slice(1).map(function (r) {
+    let d = {};
+    try { d = JSON.parse(r[7] || '{}'); } catch (x) {}
+    return { received: r[0], student: r[1], page: r[2], game: r[3], score: r[4], total: r[5],
+      missed: d.missed || [], mistakes: d.mistakes || [], at: r[8] };
+  });
+  return reply_({ ok: true, rows: rows });
+}
+
+function sheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sh = ss.getSheetByName(SHEET_NAME);
+  if (!sh) { sh = ss.insertSheet(SHEET_NAME); sh.appendRow(HEADERS); sh.setFrozenRows(1); }
+  return sh;
+}
+function text_(v) { const s = String(v == null ? '' : v).slice(0, 45000); return /^[=+\\-@]/.test(s) ? "'" + s : s; }
+function num_(v) { const n = Number(v); return v === null || v === undefined || v === '' || !isFinite(n) ? '' : n; }
+function reply_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
+`;
+  }
+
+  async function openResultsSetup() {
+    // Reuse the same key until setup is finished, so code already pasted into Google keeps matching.
+    if (!cfg.resultsKey && !cfg.pendingResultsKey) { cfg.pendingResultsKey = randomId(24); saveCfg(); }
+    const key = cfg.resultsKey || cfg.pendingResultsKey;
+    const body = document.createElement('div');
+    body.className = 'setup';
+    body.innerHTML = `
+      <p>Scores and wrong answers are saved to a Google Sheet that you own. Set it up once, in about 5 minutes:</p>
+      <ol class="steps">
+        <li>Open <a href="https://sheets.new" target="_blank" rel="noopener">a new Google Sheet</a> and name it “Bridgeway results”.</li>
+        <li>In the Sheet choose <b>Extensions → Apps Script</b>. Delete the code that is there and paste this code:
+          <div class="code-box"><pre id="gs-code"></pre>
+            <button type="button" class="btn btn-soft btn-sm" id="gs-copy">${icon('copy')}<span>Copy code</span></button></div></li>
+        <li>Click <b>Save</b>, then <b>Deploy → New deployment</b>. Pick the type <b>Web app</b>, set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, and click <b>Deploy</b>. Allow access when Google asks.</li>
+        <li>Copy the <b>Web app URL</b> and paste it here:</li>
+      </ol>
+      <label class="field"><span>Web app URL</span>
+        <input id="gs-url" type="url" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec" value="${esc(resultsEndpoint || '')}"></label>
+      <details class="help"><summary>Already set up on another computer?</summary>
+        <label class="field" style="margin-top:10px"><span>Results key (shown on the second line of your Apps Script code)</span>
+          <input id="gs-key" type="text" spellcheck="false" autocomplete="off" value="${esc(key)}"></label>
+      </details>
+      <p class="hint">Keep the key private: anyone with it can read the results.</p>`;
+    const code = $('#gs-code', body);
+    const keyInput = $('#gs-key', body);
+    code.textContent = appsScript(key);
+    keyInput.addEventListener('input', () => { if (KEY_RE.test(keyInput.value.trim())) code.textContent = appsScript(keyInput.value.trim()); });
+    $('#gs-copy', body).addEventListener('click', () => copy(code.textContent, 'Code copied'));
+
+    await modal({
+      title: resultsReady() ? 'Results settings' : 'Turn on results',
+      body, confirm: 'Save and test', wide: true,
+      onConfirm: (dlg) => withLock(async () => {
+        const url = $('#gs-url', dlg).value.trim();
+        const k = $('#gs-key', dlg).value.trim();
+        if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(url)) throw new Error('Paste the Web app URL from Apps Script. It looks like https://script.google.com/macros/s/…/exec');
+        if (!KEY_RE.test(k)) throw new Error('The results key should be 12–64 letters or numbers.');
+        await fetchResults(url, k);
+        cfg.resultsKey = k;
+        delete cfg.pendingResultsKey;
+        saveCfg();
+        if (url !== resultsEndpoint) {
+          await commit([{ path: RESULTS_CONFIG, content: JSON.stringify({ endpoint: url }, null, 2) + '\n' }], 'Connect results sheet');
+        }
+        resultsEndpoint = url;
+        await loadResults();
+        renderList();
+        toast('Results connected. New games will appear within a few minutes.');
+      }),
+    });
+  }
+
   /* ---------------- operations ---------------- */
   const find = (slug) => students.find((s) => s.slug === slug);
 
@@ -488,7 +760,7 @@
   }
 
   function writeMeta(s, patch) {
-    return { name: s.name, slug: s.slug, fileName: s.fileName, createdAt: s.createdAt || s.updatedAt, updatedAt: new Date().toISOString(), ...patch };
+    return { name: s.name, slug: s.slug, fileName: s.fileName, aliases: s.aliases || [], createdAt: s.createdAt || s.updatedAt, updatedAt: new Date().toISOString(), ...patch };
   }
 
   async function act(action, slug, btn) {
@@ -497,6 +769,7 @@
     const link = linkFor(slug);
 
     if (action === 'copy') return copy(link);
+    if (action === 'results') return resultsReady() ? openResults(s) : openResultsSetup();
     if (action === 'open') return window.open(link, '_blank', 'noopener');
 
     if (action === 'preview') {
@@ -576,7 +849,8 @@
         confirm: 'Generate new link',
         onConfirm: () => withLock(async () => {
           const slug2 = newSlug(s.name);
-          const meta = writeMeta(s, { slug: slug2 });
+          // keep the old link name so results recorded under it still belong to this student
+          const meta = writeMeta(s, { slug: slug2, aliases: [...new Set([...(s.aliases || []), slug])] });
           const changes = [];
           for (const f of s.files) {
             const rest = f.path.slice(`${STUDENT_DIR}/${slug}/`.length);
@@ -676,6 +950,9 @@
     store.clear();
     cfg = null;
     students = [];
+    results = null;
+    resultsEndpoint = null;
+    resultsError = null;
     pending.clear();
     $('#add-result').hidden = true;
     renderLogin();
@@ -686,6 +963,7 @@
     $('#login-form').addEventListener('submit', onLogin);
     $('#signout').addEventListener('click', signOut);
     $('#refresh').addEventListener('click', () => refresh());
+    $('#results-btn').addEventListener('click', () => openResultsSetup());
     $('#search').addEventListener('input', renderList);
     $('#add-form').addEventListener('submit', onAdd);
 

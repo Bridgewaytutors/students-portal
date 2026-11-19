@@ -38,6 +38,23 @@ Every link ends in a random code, so nobody can guess another student's URL.
 | Revoke a link | **⋯ → Generate new link**. The old link stops working |
 | Delete | **⋯ → Delete** |
 | Preview or back up | **⋯ → Preview file** or **⋯ → Download HTML** |
+| See scores | **Results** on the student's row |
+
+## Results (scores and wrong answers)
+
+Every student page includes `assets/results.js`. When a child finishes a game, it sends the score and each wrong answer (the question, what they chose and the right answer) to a Google Sheet you own. The admin page reads the Sheet and shows it on each student's row.
+
+**Setup (once):** in the admin page click **Turn on results** and follow the four steps: create a Google Sheet, paste the generated Apps Script code, deploy it as a web app (*Execute as: Me*, *Who has access: Anyone*), and paste the web app URL back in. The admin page commits the URL to `assets/results-config.json`. Until that file exists, the tracker does nothing.
+
+- The **results key** sits on line 2 of the Apps Script code. The admin page needs it to read results; keep it private. On a new computer, enter it under *Already set up on another computer?*
+- The Sheet is a normal spreadsheet with readable columns, so you can sort, filter or delete rows there.
+- Automatic tracking works with the Bridgeway game template (`#stage`, `#fb`, `.done-box`). A page built differently can report on its own:
+  ```js
+  BridgewayResults.manual = true;
+  BridgewayResults.report({ game: 'Spelling', score: 7, total: 10,
+    mistakes: [{ q: 'Spell "ocean"', chose: 'oshun', answer: 'ocean' }] });
+  ```
+- Results only include finished games. If a child is offline, the result is saved in their browser and sent on their next visit.
 
 ## Things to know
 
