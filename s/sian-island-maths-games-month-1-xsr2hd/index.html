@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Island Maths Games – Month 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sea:#0e7c86; --sea-dark:#0a5a62; --sea-light:#d7f1f2;
+    --sand:#fbf3e2; --sand-dark:#efdcb4; --coral:#ef6f53; --palm:#3f9d5a;
+    --sun:#f6b93b; --ink:#1f2d33; --muted:#5b6b70; --good:#2f9e5b; --bad:#d9534f; --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:'Nunito',system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,#bfe9ec 0%,#e9f7f6 30%,var(--sand) 30.2%,var(--sand) 100%);min-height:100vh}
+  h1,h2,h3,.btn,.stars,.tab,.q,.timer{font-family:'Fredoka',system-ui,sans-serif}
+  .wrap{max-width:900px;margin:0 auto;padding:20px 18px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:clamp(26px,4.5vw,40px);color:var(--sea-dark)}
+  header p{margin:4px 0 0;color:var(--muted)}
+  .stars{background:#fff;border-radius:999px;padding:8px 16px;font-size:20px;font-weight:600;box-shadow:0 3px 0 var(--sand-dark);display:flex;align-items:center;gap:8px}
+  .stars svg{width:24px;height:24px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:20px}
+  .tab{border:none;border-radius:14px 14px 0 0;padding:10px 16px;font-size:17px;font-weight:600;cursor:pointer;background:rgba(255,255,255,.55);color:var(--sea-dark)}
+  .tab.on{background:#fff;box-shadow:0 -2px 0 var(--sun) inset}
+  .unitbox{background:#fff;border-radius:0 var(--radius) var(--radius) var(--radius);padding:18px;box-shadow:0 5px 0 var(--sand-dark)}
+  .unitbox h2{margin:0 0 4px;color:var(--sea-dark);font-size:24px}
+  .unitbox > p{margin:0 0 14px;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+  .gcard{background:var(--sand);border-radius:16px;padding:16px;border:none;text-align:left;cursor:pointer;box-shadow:0 4px 0 var(--sand-dark);transition:transform .12s;font:inherit;color:inherit;display:flex;flex-direction:column;gap:6px}
+  .gcard:hover{transform:translateY(-3px)}
+  .gcard .ic{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:26px;background:#fff}
+  .gcard h3{margin:2px 0 0;font-size:20px}
+  .gcard p{margin:0;color:var(--muted);font-size:14.5px}
+  .gcard .best{font-size:13px;font-weight:700;color:var(--sea)}
+  :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+  .panel{background:#fff;border-radius:var(--radius);padding:22px;margin-top:20px;box-shadow:0 5px 0 var(--sand-dark)}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .top h2{margin:0;color:var(--sea-dark);font-size:26px}
+  .how{background:var(--sea-light);border-radius:12px;padding:10px 14px;margin:12px 0 4px;font-size:15px}
+  .progress{height:12px;background:var(--sea-light);border-radius:99px;overflow:hidden;margin:14px 0 6px}
+  .progress > div{height:100%;background:linear-gradient(90deg,var(--sea),var(--palm));width:0;transition:width .3s}
+  .meta{color:var(--muted);font-size:14px;display:flex;justify-content:space-between}
+  .q{font-size:clamp(21px,3.8vw,28px);text-align:center;margin:24px 0 18px;line-height:1.5}
+  .q .hl{color:var(--coral);font-size:1.25em;text-decoration:underline;text-underline-offset:5px}
+  .q .big{font-size:1.4em;color:var(--sea-dark);letter-spacing:1px}
+  .col{font-family:'Courier New',ui-monospace,monospace;font-size:clamp(26px,5vw,36px);font-weight:700;background:var(--sand);border-radius:14px;padding:14px 22px;display:inline-block;text-align:right;line-height:1.35;white-space:pre;margin-top:8px}
+  .col .line{border-top:3px solid var(--ink);display:block}
+  .opts{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+  .btn{border:none;border-radius:14px;padding:12px 20px;font-size:20px;font-weight:600;cursor:pointer;background:var(--sea);color:#fff;box-shadow:0 4px 0 var(--sea-dark);min-width:84px}
+  .btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--sea-dark)}
+  .btn.alt{background:#fff;color:var(--sea-dark);box-shadow:0 4px 0 var(--sand-dark);border:2px solid var(--sand-dark)}
+  .btn.sun{background:var(--sun);color:var(--ink);box-shadow:0 4px 0 #c98f1d}
+  .btn.small{font-size:15px;padding:8px 14px;min-width:0}
+  .btn[disabled]{opacity:.55;cursor:default}
+  .btn.right{background:var(--good);box-shadow:0 4px 0 #1f6e3f;opacity:1}
+  .btn.wrong{background:var(--bad);box-shadow:0 4px 0 #9b302d;opacity:1}
+  .answer{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+  .answer input{font-family:'Fredoka',sans-serif;font-size:28px;padding:10px 16px;border-radius:14px;border:3px solid var(--sand-dark);width:min(280px,100%);text-align:center}
+  .answer input:focus{outline:none;border-color:var(--sea)}
+  .feedback{min-height:56px;text-align:center;margin-top:16px;font-size:18px;font-weight:600}
+  .feedback.good{color:var(--good)} .feedback.bad{color:var(--bad)}
+  .row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .numline{display:block;margin:6px auto 0;max-width:100%}
+  .timer{font-size:46px;text-align:center;color:var(--coral);margin-top:10px}
+  .done-box{text-align:center;padding:20px 0 6px}
+  .done-box .big{font-family:'Fredoka',sans-serif;font-size:44px;color:var(--sea-dark);margin:6px 0}
+  .review{max-width:540px;margin:12px auto 0;text-align:left;background:var(--sand);border-radius:12px;padding:12px 16px;font-size:15px}
+  .review li{margin:3px 0}
+  .pop{animation:pop .35s ease} @keyframes pop{50%{transform:scale(1.12)}}
+  .shake{animation:shake .35s ease} @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .tip{margin-top:22px;font-size:14px;color:var(--muted);text-align:center}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Island Maths Games</h1>
+      <p>Month 1 · Island Numbers · Sian's Maths</p>
+    </div>
+    <div class="stars" aria-live="polite">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f6b93b" stroke="#c98f1d" stroke-width="1.2" d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>
+      <span id="starCount">0</span> stars
+    </div>
+  </header>
+
+  <section id="home">
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <div class="unitbox" id="unitbox"></div>
+    <p class="tip">Questions change every time you play. 1 star for every right answer. Your best score for each game is shown on its card.</p>
+  </section>
+
+  <section id="game" class="panel hidden" aria-live="polite">
+    <div class="top">
+      <h2 id="gTitle"></h2>
+      <button class="btn alt small" id="backBtn">← All games</button>
+    </div>
+    <div class="how" id="gHow"></div>
+    <div class="progress"><div id="bar"></div></div>
+    <div class="meta"><span id="roundTxt"></span><span id="scoreTxt"></span></div>
+    <div id="stage"></div>
+    <div class="feedback" id="fb"></div>
+    <div class="row" id="nextRow"></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  // ---------- helpers ----------
+  const $ = s => document.querySelector(s);
+  const R = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+  const pick = a => a[Math.floor(Math.random()*a.length)];
+  const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+  const fmt = n => n.toLocaleString('en-GB');
+  const fmtT = n => (n<0 ? '−'+fmt(-n) : fmt(n));
+  const el = (tag, attrs={}, kids=[]) => { const e=document.createElement(tag); for(const k in attrs){ if(k==='class') e.className=attrs[k]; else if(k==='html') e.innerHTML=attrs[k]; else if(k.startsWith('on')) e.addEventListener(k.slice(2),attrs[k]); else e.setAttribute(k,attrs[k]); } (Array.isArray(kids)?kids:[kids]).forEach(c=>{ if(c==null) return; e.appendChild(typeof c==='string'?document.createTextNode(c):c); }); return e; };
+  const cheers = ['Brilliant!','Spot on!','Super!','Excellent!','You got it!','Fantastic!','Well done!'];
+  const cheer = () => pick(cheers);
+  function store(k,v){ try{ if(v===undefined) return localStorage.getItem(k); localStorage.setItem(k,v); }catch(e){ return null; } }
+
+  let stars = parseInt(store('sianMathsStars')||'0',10)||0;
+  const starEl = $('#starCount'); starEl.textContent = stars;
+  function addStar(){ stars++; starEl.textContent=stars; const p=starEl.parentElement; p.classList.remove('pop'); void p.offsetWidth; p.classList.add('pop'); store('sianMathsStars',String(stars)); }
+
+  // makes a set of unique options including the answer
+  function options(ans, wrongs, n=4){
+    const set = [ans];
+    for(const w of shuffle(wrongs)){ if(set.length>=n) break; if(w!==ans && !set.includes(w) && (typeof w!=='number' || isFinite(w))) set.push(w); }
+    return shuffle(set);
+  }
+  function placeName(p){ return {1:'ones',10:'tens',100:'hundreds',1000:'thousands',10000:'ten thousands',100000:'hundred thousands'}[p]; }
+  function nearestName(p){ return 'nearest '+fmt(p); }
+
+  // ---------- Roman numerals ----------
+  function toRoman(n){
+    const map=[[1000,'M'],[900,'CM'],[500,'D'],[400,'CD'],[100,'C'],[90,'XC'],[50,'L'],[40,'XL'],[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];
+    let s=''; for(const [v,r] of map){ while(n>=v){ s+=r; n-=v; } } return s;
+  }
+
+  // ---------- column layout ----------
+  function columns(a, b, op){
+    const A=fmt(a), B=fmt(b), w=Math.max(A.length,B.length)+2;
+    const box = el('div',{class:'col'});
+    box.appendChild(document.createTextNode(A.padStart(w)+'\n'));
+    box.appendChild(document.createTextNode((op+' '+B.padStart(w-2))+'\n'));
+    box.appendChild(el('span',{class:'line'},' '.repeat(w)));
+    return box;
+  }
+
+  // ---------- number line for temperatures ----------
+  function numberLine(lo, hi, marks){
+    const W=560, H=70, pad=24, step=(W-2*pad)/(hi-lo);
+    const ns='http://www.w3.org/2000/svg';
+    const svg=document.createElementNS(ns,'svg'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('class','numline'); svg.setAttribute('width',W);
+    const line=document.createElementNS(ns,'line'); line.setAttribute('x1',pad); line.setAttribute('x2',W-pad); line.setAttribute('y1',30); line.setAttribute('y2',30); line.setAttribute('stroke','#1f2d33'); line.setAttribute('stroke-width','2'); svg.appendChild(line);
+    for(let v=lo; v<=hi; v++){
+      const x=pad+(v-lo)*step;
+      const t=document.createElementNS(ns,'line'); t.setAttribute('x1',x); t.setAttribute('x2',x); t.setAttribute('y1',v%5===0?22:26); t.setAttribute('y2',v%5===0?38:34); t.setAttribute('stroke',v===0?'#ef6f53':'#1f2d33'); t.setAttribute('stroke-width',v===0?3:1.5); svg.appendChild(t);
+      if(v%5===0){ const tx=document.createElementNS(ns,'text'); tx.setAttribute('x',x); tx.setAttribute('y',58); tx.setAttribute('text-anchor','middle'); tx.setAttribute('font-size','15'); tx.setAttribute('font-family','Nunito, sans-serif'); tx.setAttribute('fill', v===0?'#ef6f53':'#1f2d33'); tx.textContent=v<0?'−'+(-v):v; svg.appendChild(tx); }
+    }
+    (marks||[]).forEach(m=>{ const x=pad+(m-lo)*step; const c=document.createElementNS(ns,'circle'); c.setAttribute('cx',x); c.setAttribute('cy',30); c.setAttribute('r',7); c.setAttribute('fill','#0e7c86'); svg.appendChild(c); });
+    return svg;
+  }
+
+  // ---------- question generators ----------
+  // Each returns {build(stage) -> nodes, type:'mc'|'input', options, answer, explain, review}
+  const GEN = {
+    digitValue(){
+      let n; do { n = R(100000,999999); } while(false);
+      const s = String(n); let i; do { i = R(0,5); } while(s[i]==='0');
+      const d = +s[i], p = Math.pow(10, 5-i), ans = d*p;
+      const wrongs = [d, d*p*10, d*p/10, d*Math.pow(10,(5-i+2)%6), d*1000, d*100].filter(x=>x>=1 && Number.isInteger(x));
+      const display = fmt(n); let count=-1, html='';
+      for(const ch of display){ if(ch===','){ html+=','; continue; } count++; html += count===i ? '<span class="hl">'+ch+'</span>' : ch; }
+      return { type:'mc', q:'What is the <b>value</b> of the highlighted digit?<br><span class="big">'+html+'</span>', options:options(ans,wrongs).map(fmt), answer:fmt(ans),
+        explain:`The ${d} is in the ${placeName(p)} column, so it is worth ${fmt(ans)}.`, review:`${display}: the ${d} is worth ${fmt(ans)}` };
+    },
+    compare(){
+      const a = R(100000,999999); let b;
+      const kind = R(0,2);
+      if(kind===0){ const s=String(a).split(''); const i=R(1,4); [s[i],s[i+1]]=[s[i+1],s[i]]; b=+s.join(''); }
+      else if(kind===1){ b = a + pick([1,10,100,1000,10000,-1,-10,-100,-1000,-10000]); }
+      else { b = R(100000,999999); }
+      if(b===a || b<100000 || b>999999) b = a + 1000;
+      const ans = a<b ? '<' : '>';
+      return { type:'mc', q:`Which sign goes in the box?<br><span class="big">${fmt(a)} &nbsp;□&nbsp; ${fmt(b)}</span>`, options:['<','>','='], answer:ans,
+        explain:`Compare from the left: ${fmt(a)} is ${ans==='<'?'less than':'greater than'} ${fmt(b)}.`, review:`${fmt(a)} ${ans} ${fmt(b)}` };
+    },
+    roman(){
+      const toRom = Math.random()<0.5;
+      const n = pick([R(1,39),R(40,99),R(100,999),R(1000,2030)]);
+      const near = [n+1,n-1,n+10,n-10,n+100,n-100,n+50,n-50,n+5,n-5,n+9,n-9].filter(x=>x>0 && x<4000);
+      if(toRom){
+        return { type:'mc', q:`What is <span class="big">${n}</span> in Roman numerals?`, options:options(toRoman(n), near.map(toRoman)), answer:toRoman(n),
+          explain:`${n} = ${toRoman(n)}`, review:`${n} = ${toRoman(n)}` };
+      }
+      return { type:'mc', q:`What number is <span class="big">${toRoman(n)}</span>?`, options:options(n, near).map(String), answer:String(n),
+        explain:`${toRoman(n)} = ${n}. Remember: a smaller numeral before a bigger one means subtract.`, review:`${toRoman(n)} = ${n}` };
+    },
+    ordering(){
+      const base = R(100,999)*1000;
+      const nums = shuffle([base+R(0,999), base+R(0,999)+pick([10000,-10000]), base+R(0,999)+pick([1000,-1000]), base+R(0,99)+pick([100,-100])]).filter((v,i,a)=>a.indexOf(v)===i && v>0);
+      const smallest = Math.min(...nums), biggest = Math.max(...nums);
+      const askBig = Math.random()<0.5; const ans = askBig?biggest:smallest;
+      return { type:'mc', q:`Which number is the <b>${askBig?'largest':'smallest'}</b>?`, options:shuffle(nums).map(fmt), answer:fmt(ans),
+        explain:`Compare from the left. The ${askBig?'largest':'smallest'} is ${fmt(ans)}.`, review:`${askBig?'Largest':'Smallest'} of ${nums.map(fmt).join(', ')}: ${fmt(ans)}` };
+    },
+    rounding(){
+      const p = pick([10,100,1000,10000,100000]);
+      let n = R(10000,999999); if(p===100000 && n<100000) n+=100000;
+      if(Math.random()<0.25){ n = Math.floor(n/p)*p + p/2; } // tricky halfway case
+      const ans = Math.round(n/p)*p;
+      const down = Math.floor(n/p)*p, up = down+p;
+      const wrongs = [down,up,Math.round(n/(p*10))*p*10, p>10?Math.round(n/(p/10))*(p/10):ans+p*2, ans-p].filter(x=>x>0);
+      return { type:'mc', q:`Round <span class="big">${fmt(n)}</span> to the <b>${nearestName(p)}</b>.`, options:options(ans,wrongs).map(fmt), answer:fmt(ans),
+        explain:`The decider digit is ${Math.floor(n/(p/10))%10}, so round ${ans===up?'up':'down'}: ${fmt(ans)}.`, review:`${fmt(n)} to the ${nearestName(p)} = ${fmt(ans)}` };
+    },
+    temperature(){
+      const kind = R(0,2);
+      if(kind===0){ // difference across zero
+        const a = -R(1,9), b = R(1,9), ans = b-a;
+        return { type:'mc', line:[-10,10,[a,b]], q:`How many degrees between <span class="big">${fmtT(a)}°C</span> and <span class="big">${b}°C</span>?`, options:options(ans,[b+a<0?-(b+a):b+a, ans+1, ans-1, ans+2, Math.abs(a)]).map(String), answer:String(ans),
+          explain:`From ${fmtT(a)} to 0 is ${-a}, from 0 to ${b} is ${b}: ${-a} + ${b} = ${ans} degrees.`, review:`${fmtT(a)}°C to ${b}°C = ${ans} degrees` };
+      }
+      if(kind===1){ // rise or fall
+        const start = R(-8,8), ch = R(2,9), up = Math.random()<0.5; const ans = up? start+ch : start-ch;
+        if(ans<-10||ans>10) return GEN.temperature();
+        return { type:'mc', line:[-10,10,[start]], q:`The temperature is <span class="big">${fmtT(start)}°C</span>. It ${up?'rises':'falls'} by <b>${ch} degrees</b>. What is it now?`, options:options(fmtT(ans),[fmtT(-ans),fmtT(ans+1),fmtT(ans-1),fmtT(up?start-ch:start+ch)]), answer:fmtT(ans),
+          explain:`Start at ${fmtT(start)} and count ${up?'up':'down'} ${ch}: ${fmtT(ans)}°C.`, review:`${fmtT(start)}°C ${up?'+':'−'} ${ch} = ${fmtT(ans)}°C` };
+      }
+      // sequence
+      const st = R(-15,15), d = pick([2,3,4,5]) * (Math.random()<0.5?-1:1);
+      const seq=[st,st+d,st+2*d,st+3*d], ans = st+4*d;
+      return { type:'mc', q:`What comes next?<br><span class="big">${seq.map(fmtT).join(', ')}, …</span>`, options:options(fmtT(ans),[fmtT(-ans),fmtT(ans+d),fmtT(ans-1),fmtT(ans+1)]), answer:fmtT(ans),
+        explain:`The rule is ${d>0?'add':'subtract'} ${Math.abs(d)}: next is ${fmtT(ans)}.`, review:`${seq.map(fmtT).join(', ')}, ${fmtT(ans)}` };
+    },
+    addition(){
+      const big = Math.random()<0.4;
+      const a = big? R(100000,499999) : R(10000,69999), b = big? R(10000,399999) : R(10000,29999);
+      return { type:'input', col:[a,b,'+'], q:'Work it out with the column method. Estimate first!', answer:a+b,
+        explain:`${fmt(a)} + ${fmt(b)} = ${fmt(a+b)}`, review:`${fmt(a)} + ${fmt(b)} = ${fmt(a+b)}` };
+    },
+    estimate(){
+      const a = R(10000,89999), b = R(10000,89999);
+      const ans = Math.round(a/1000)*1000 + Math.round(b/1000)*1000;
+      const wrongs = [ans+10000, ans-10000, ans*10, Math.round(ans/10/1000)*1000, ans+20000].filter(x=>x>0);
+      return { type:'mc', q:`Which is the best estimate?<br><span class="big">${fmt(a)} + ${fmt(b)}</span>`, options:options(ans,wrongs).map(fmt), answer:fmt(ans),
+        explain:`${fmt(Math.round(a/1000)*1000)} + ${fmt(Math.round(b/1000)*1000)} = ${fmt(ans)} (the real answer is ${fmt(a+b)}).`, review:`${fmt(a)} + ${fmt(b)} ≈ ${fmt(ans)}` };
+    },
+    subtraction(){
+      const zero = Math.random()<0.3;
+      let a, b;
+      if(zero){ a = pick([10000,20000,50000,60000,100000,300000,500000]) + pick([0,0,5000,400]); b = R(1000, a-1000); }
+      else { a = R(30000,99999); b = R(10000,a-1000); }
+      return { type:'input', col:[a,b,'−'], q:'Work it out with the column method, then check with the inverse.', answer:a-b,
+        explain:`${fmt(a)} − ${fmt(b)} = ${fmt(a-b)}. Check: ${fmt(a-b)} + ${fmt(b)} = ${fmt(a)} ✓`, review:`${fmt(a)} − ${fmt(b)} = ${fmt(a-b)}` };
+    },
+    inverse(){
+      const a = R(30000,99999), b = R(10000,a-1000), real = a-b;
+      const correct = Math.random()<0.5;
+      let shown = real;
+      if(!correct){ shown = real + pick([1000,-1000,100,-100,10000,-10000,10,-10]); if(shown<=0) shown = real+1000; }
+      const ans = shown===real ? 'Yes, it’s right' : 'No, it’s wrong';
+      return { type:'mc', q:`Is this subtraction right? Check with the inverse.<br><span class="big">${fmt(a)} − ${fmt(b)} = ${fmt(shown)}</span>`, options:['Yes, it’s right','No, it’s wrong'], answer:ans,
+        explain:`Inverse: ${fmt(shown)} + ${fmt(b)} = ${fmt(shown+b)}${shown+b===a?' ✓ which matches.':', not '+fmt(a)+'. The right answer is '+fmt(real)+'.'}`, review:`${fmt(a)} − ${fmt(b)} = ${fmt(real)}` };
+    },
+    wordAdd(){
+      const t = pick([
+        (a,b)=>[`There are ${fmt(a)} palm trees on the north side of the island and ${fmt(b)} on the south side. How many altogether?`,a+b],
+        (a,b)=>[`${fmt(a)} visitors came to the islands in June and ${fmt(b)} in July. How many visitors in total?`,a+b],
+        (a,b)=>[`Mia counts ${fmt(a)} grains of sand in one jar and ${fmt(b)} in another. What is the total?`,a+b]
+      ]);
+      const [q,ans] = t(R(10000,59999),R(10000,39999));
+      return { type:'input', q, answer:ans, explain:`Add them: ${fmt(ans)}.`, review:q.replace(/<[^>]+>/g,'')+' → '+fmt(ans) };
+    },
+    wordSub(){
+      const total = pick([50000,80000,100000,150000]);
+      const used = R(10000, total-15000);
+      const t = pick([
+        [`The ferry company printed ${fmt(total)} tickets. It has sold ${fmt(used)}. How many are left?`],
+        [`The islanders need £${fmt(total)} for a new jetty. They have raised £${fmt(used)}. How much more do they need? (Type the number only.)`],
+        [`A stadium holds ${fmt(total)} people. ${fmt(used)} tickets have been sold. How many seats are still empty?`]
+      ]);
+      return { type:'input', q:t[0], answer:total-used, explain:`${fmt(total)} − ${fmt(used)} = ${fmt(total-used)}.`, review:`${fmt(total)} − ${fmt(used)} = ${fmt(total-used)}` };
+    }
+  };
+
+  // ---------- times tables blitz ----------
+  const TABLES = {1:[6,7],2:[8,9],3:[11,12],4:[2,3,4,5,6,7,8,9,10,11,12]};
+
+  // ---------- units and games ----------
+  const UNITS = [
+    {n:1,title:'Unit 1 – Numbers to a Million',sub:'Place value, comparing, ordering and Roman numerals',games:[
+      {id:'digitValue',title:'Digit Detective',ic:'🔍',desc:'What is the highlighted digit really worth?',how:'Look at which column the orange digit is in. Choose its value.'},
+      {id:'compare',title:'Crab Compare',ic:'🦀',desc:'Choose < or > for two big numbers.',how:'Compare the digits from the left. The first column that is different decides.'},
+      {id:'ordering',title:'Island Line-up',ic:'🏝️',desc:'Find the largest or smallest number.',how:'Line the numbers up in your head by place value and compare from the left.'},
+      {id:'roman',title:'Roman Raft',ic:'🛶',desc:'Change Roman numerals into numbers and back.',how:'I=1, V=5, X=10, L=50, C=100, D=500, M=1,000. Smaller before bigger means subtract.'},
+      {id:'blitz1',title:'Times Tables Blitz: 6 and 7',ic:'⚡',desc:'How many can you answer in 60 seconds?',how:'Type the answer and press Enter. Go as fast as you can!',blitz:1}
+    ]},
+    {n:2,title:'Unit 2 – Rounding and Negative Numbers',sub:'Round to the nearest 10 up to 100,000; count through zero',games:[
+      {id:'rounding',title:'Round the Island',ic:'🧭',desc:'Round big numbers to the nearest 10, 100, 1,000, 10,000 or 100,000.',how:'Find the rounding column, then look at the decider digit to its right: 0–4 round down, 5–9 round up.'},
+      {id:'temperature',title:'Thermometer Jump',ic:'🌡️',desc:'Temperatures, differences and sequences below zero.',how:'Use the number line. Count to zero first, then count on.'},
+      {id:'blitz2',title:'Times Tables Blitz: 8 and 9',ic:'⚡',desc:'How many can you answer in 60 seconds?',how:'Type the answer and press Enter. Go as fast as you can!',blitz:2}
+    ]},
+    {n:3,title:'Unit 3 – Column Addition and Estimating',sub:'Add 5- and 6-digit numbers; estimate to check',games:[
+      {id:'estimate',title:'Estimate Sprint',ic:'🎯',desc:'Pick the best estimate by rounding to the nearest 1,000.',how:'Round each number to the nearest 1,000, then add the rounded numbers.'},
+      {id:'addition',title:'Treasure Addition',ic:'💰',desc:'Solve column additions on paper, then type the answer.',how:'Copy the sum onto paper. Add from the ones, exchanging when a column makes 10 or more.'},
+      {id:'wordAdd',title:'Island Problems: Add',ic:'🌴',desc:'Addition word problems from Mia’s island.',how:'Read carefully, find the two numbers, and add them with the column method.'},
+      {id:'blitz3',title:'Times Tables Blitz: 11 and 12',ic:'⚡',desc:'How many can you answer in 60 seconds?',how:'Type the answer and press Enter. Go as fast as you can!',blitz:3}
+    ]},
+    {n:4,title:'Unit 4 – Column Subtraction and Inverse',sub:'Subtract big numbers, exchange across zeros, check with addition',games:[
+      {id:'subtraction',title:'Shark Subtraction',ic:'🦈',desc:'Solve column subtractions on paper, then type the answer.',how:'Copy the sum onto paper. Subtract from the ones, exchanging when the top digit is smaller.'},
+      {id:'inverse',title:'Inverse Inspector',ic:'🕵️',desc:'Is the answer right? Check it with addition.',how:'Add the answer to the number taken away. If you get the first number, it’s right!'},
+      {id:'wordSub',title:'Island Problems: Subtract',ic:'⛴️',desc:'Subtraction word problems from Mia’s island.',how:'Read carefully. “How many left?” and “how much more?” mean subtract.'},
+      {id:'mixed',title:'Month Review Mix',ic:'🏆',desc:'A mix of every game from the month.',how:'Ten questions from all four units. Show what you know!'},
+      {id:'blitz4',title:'Times Tables Blitz: Mixed',ic:'⚡',desc:'All tables to 12 × 12 in 60 seconds.',how:'Type the answer and press Enter. Go as fast as you can!',blitz:4}
+    ]}
+  ];
+  const ALL_GAMES = UNITS.flatMap(u=>u.games);
+  const MIX = ['digitValue','compare','roman','rounding','temperature','estimate','addition','subtraction','inverse','wordSub','ordering'];
+
+  let unitOn = parseInt(store('sianMathsUnit')||'1',10)||1;
+  function bestKey(id){ return 'sianMathsBest_'+id; }
+  function drawHome(){
+    const tabs=$('#tabs'); tabs.innerHTML='';
+    UNITS.forEach(u=>tabs.appendChild(el('button',{class:'tab'+(u.n===unitOn?' on':''),role:'tab','aria-selected':u.n===unitOn,onclick:()=>{unitOn=u.n; store('sianMathsUnit',String(u.n)); drawHome();}},'Week '+u.n)));
+    const u = UNITS[unitOn-1], box=$('#unitbox'); box.innerHTML='';
+    box.appendChild(el('h2',{},u.title)); box.appendChild(el('p',{},u.sub));
+    const grid=el('div',{class:'grid'});
+    u.games.forEach(g=>{
+      const b = store(bestKey(g.id));
+      grid.appendChild(el('button',{class:'gcard',onclick:()=>start(g)},[
+        el('div',{class:'ic'},g.ic), el('h3',{},g.title), el('p',{},g.desc),
+        b!=null ? el('div',{class:'best'},'Best: '+b+(g.blitz?' in 60 s':' / 10')) : null
+      ]));
+    });
+    box.appendChild(grid);
+  }
+
+  // ---------- engine ----------
+  let G=null, timer=null;
+  const stage=$('#stage'), fb=$('#fb'), nextRow=$('#nextRow');
+  $('#backBtn').addEventListener('click', goHome);
+  function goHome(){ clearInterval(timer); $('#game').classList.add('hidden'); $('#home').classList.remove('hidden'); drawHome(); window.scrollTo(0,0); }
+  function setFb(m,good){ fb.textContent=m; fb.className='feedback '+(good===true?'good':good===false?'bad':''); }
+
+  function start(g){
+    $('#home').classList.add('hidden'); $('#game').classList.remove('hidden');
+    $('#gTitle').textContent=g.title; $('#gHow').textContent=g.how;
+    clearInterval(timer);
+    G={g, round:0, total:10, score:0, missed:[]};
+    window.scrollTo(0,0);
+    if(g.blitz) return blitz(g);
+    render();
+  }
+  function meta(){ $('#bar').style.width=(G.round/G.total*100)+'%'; $('#roundTxt').textContent='Question '+Math.min(G.round+1,G.total)+' of '+G.total; $('#scoreTxt').textContent='Score: '+G.score; }
+
+  function render(){
+    stage.innerHTML=''; nextRow.innerHTML=''; setFb(''); meta();
+    if(G.round>=G.total) return finish();
+    const id = G.g.id==='mixed' ? MIX[(G.round + (G.offset ??= R(0,MIX.length-1))) % MIX.length] : G.g.id;
+    const Q = GEN[id]();
+    const qd = el('div',{class:'q',html:Q.q}); stage.appendChild(qd);
+    if(Q.line) stage.appendChild(numberLine(Q.line[0],Q.line[1],Q.line[2]));
+    if(Q.col){ const w=el('div',{style:'text-align:center'}); w.appendChild(columns(Q.col[0],Q.col[1],Q.col[2])); stage.appendChild(w); }
+    if(Q.type==='mc'){
+      const box=el('div',{class:'opts',style:'margin-top:14px'});
+      Q.options.forEach(o=>{
+        const b=el('button',{class:'btn',onclick:()=>{
+          box.querySelectorAll('button').forEach(x=>{ x.disabled=true; if(x.textContent===String(Q.answer)) x.classList.add('right'); });
+          if(String(o)===String(Q.answer)) good(Q); else { b.classList.add('wrong'); qd.classList.add('shake'); bad(Q); }
+        }},String(o));
+        box.appendChild(b);
+      });
+      stage.appendChild(box);
+    } else {
+      const inp=el('input',{type:'text',inputmode:'numeric',autocomplete:'off','aria-label':'your answer',placeholder:'answer'});
+      const chk=el('button',{class:'btn sun',onclick:check},'Check');
+      function check(){
+        const v=inp.value.replace(/[,\s]/g,'').replace('−','-');
+        if(v===''||isNaN(+v)){ inp.classList.add('shake'); setTimeout(()=>inp.classList.remove('shake'),400); return; }
+        inp.disabled=true; chk.disabled=true;
+        if(+v===Q.answer){ inp.style.borderColor='var(--good)'; good(Q); }
+        else { inp.style.borderColor='var(--bad)'; bad(Q, 'You wrote '+fmt(+v)+'. '); }
+      }
+      inp.addEventListener('keydown',e=>{ if(e.key==='Enter') check(); });
+      stage.appendChild(el('div',{class:'answer',style:'margin-top:16px'},[inp,chk]));
+      setTimeout(()=>inp.focus(),50);
+    }
+  }
+  function next(){ const b=el('button',{class:'btn sun',onclick:()=>{G.round++; render();}}, G.round+1>=G.total?'See my score →':'Next →'); nextRow.appendChild(b); b.focus(); }
+  function good(Q){ G.score++; addStar(); setFb(cheer()+' '+Q.explain,true); meta(); next(); }
+  function bad(Q,pre){ G.missed.push(Q.review); setFb('Not yet. '+(pre||'')+Q.explain,false); meta(); next(); }
+
+  function finish(){
+    $('#bar').style.width='100%'; $('#roundTxt').textContent='Finished!';
+    const prev = parseInt(store(bestKey(G.g.id))||'-1',10);
+    if(G.score>prev) store(bestKey(G.g.id),String(G.score));
+    const pct=G.score/G.total;
+    const box=el('div',{class:'done-box'},[el('div',{},'You scored'),el('div',{class:'big'},G.score+' / '+G.total),
+      el('div',{}, (G.score>prev && prev>=0?'New best score! ':'') + (pct===1?'Perfect! You are an island maths champion!':pct>=0.7?'Great work! Nearly there.':'Good try! Play again to beat your score.'))]);
+    if(G.missed.length){ const ul=el('ul',{}); G.missed.forEach(m=>ul.appendChild(el('li',{},m))); box.appendChild(el('div',{class:'review'},[el('strong',{},'Look again at these:'),ul])); }
+    stage.appendChild(box);
+    nextRow.appendChild(el('button',{class:'btn',onclick:()=>start(G.g)},'Play again'));
+    nextRow.appendChild(el('button',{class:'btn alt',onclick:goHome},'Choose another game'));
+  }
+
+  // ---------- blitz ----------
+  function blitz(g){
+    stage.innerHTML=''; nextRow.innerHTML=''; setFb('');
+    $('#bar').style.width='0%'; $('#roundTxt').textContent='60 seconds'; $('#scoreTxt').textContent='Score: 0';
+    const startBtn=el('button',{class:'btn sun',onclick:go},'Start the clock');
+    stage.appendChild(el('div',{class:'q'},'Ready? You have 60 seconds.'));
+    nextRow.appendChild(startBtn); startBtn.focus();
+    function go(){
+      nextRow.innerHTML=''; stage.innerHTML='';
+      let left=60, q=null;
+      const t=el('div',{class:'timer'},'60'); const qd=el('div',{class:'q'});
+      const inp=el('input',{type:'text',inputmode:'numeric',autocomplete:'off','aria-label':'your answer'});
+      stage.appendChild(t); stage.appendChild(qd); stage.appendChild(el('div',{class:'answer'},[inp]));
+      function newQ(){
+        const tbl=pick(TABLES[g.blitz]), m=R(2,12), div=Math.random()<0.3;
+        q = div ? {text:`${tbl*m} ÷ ${tbl}`, ans:m, rev:`${tbl*m} ÷ ${tbl} = ${m}`} : (Math.random()<0.5 ? {text:`${tbl} × ${m}`,ans:tbl*m,rev:`${tbl} × ${m} = ${tbl*m}`} : {text:`${m} × ${tbl}`,ans:tbl*m,rev:`${m} × ${tbl} = ${tbl*m}`});
+        qd.innerHTML='<span class="big">'+q.text+' = ?</span>'; inp.value=''; inp.style.borderColor='';
+      }
+      inp.addEventListener('keydown',e=>{
+        if(e.key!=='Enter') return;
+        const v=inp.value.trim(); if(v==='') return;
+        if(+v===q.ans){ G.score++; addStar(); setFb(cheer(),true); }
+        else { G.missed.push(q.rev); setFb(q.rev,false); }
+        $('#scoreTxt').textContent='Score: '+G.score; newQ();
+      });
+      newQ(); inp.focus();
+      timer=setInterval(()=>{
+        left--; t.textContent=left; $('#bar').style.width=((60-left)/60*100)+'%';
+        if(left<=0){ clearInterval(timer); inp.disabled=true;
+          const prev=parseInt(store(bestKey(g.id))||'-1',10); if(G.score>prev) store(bestKey(g.id),String(G.score));
+          stage.innerHTML=''; setFb('');
+          const box=el('div',{class:'done-box'},[el('div',{},'Time’s up! You got'),el('div',{class:'big'},String(G.score)),el('div',{},(G.score>prev&&prev>=0?'New best! ':'')+'right in 60 seconds.')]);
+          const uniq=[...new Set(G.missed)];
+          if(uniq.length){ const ul=el('ul',{}); uniq.forEach(m=>ul.appendChild(el('li',{},m))); box.appendChild(el('div',{class:'review'},[el('strong',{},'Practise these facts:'),ul])); }
+          stage.appendChild(box);
+          nextRow.appendChild(el('button',{class:'btn',onclick:()=>start(g)},'Play again'));
+          nextRow.appendChild(el('button',{class:'btn alt',onclick:goHome},'Choose another game'));
+        }
+      },1000);
+    }
+  }
+
+  drawHome();
+  // expose for testing
+  window.__GEN = GEN; window.__toRoman = toRoman;
+})();
+</script>
+</body>
+</html>
