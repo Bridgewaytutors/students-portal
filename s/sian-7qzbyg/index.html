@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Island Word Games – Month 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sea:#0e7c86; --sea-dark:#0a5a62; --sea-light:#d7f1f2;
+    --sand:#fbf3e2; --sand-dark:#efdcb4; --coral:#ef6f53; --palm:#3f9d5a;
+    --sun:#f6b93b; --ink:#1f2d33; --muted:#5b6b70; --card:#ffffff;
+    --good:#2f9e5b; --bad:#d9534f; --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:'Nunito',system-ui,sans-serif;color:var(--ink);background:linear-gradient(180deg,#bfe9ec 0%,#e9f7f6 38%,var(--sand) 38.2%,var(--sand) 100%);min-height:100vh}
+  h1,h2,h3,.btn,.chip,.tile,.stars{font-family:'Fredoka',system-ui,sans-serif}
+  .wrap{max-width:900px;margin:0 auto;padding:20px 18px 60px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  header h1{margin:0;font-size:clamp(26px,4.5vw,40px);color:var(--sea-dark);letter-spacing:.3px}
+  header p{margin:4px 0 0;color:var(--muted)}
+  .stars{background:#fff;border-radius:999px;padding:8px 16px;font-size:20px;font-weight:600;box-shadow:0 3px 0 var(--sand-dark);display:flex;align-items:center;gap:8px}
+  .stars svg{width:24px;height:24px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-top:22px}
+  .gcard{background:var(--card);border-radius:var(--radius);padding:18px;border:none;text-align:left;cursor:pointer;box-shadow:0 5px 0 var(--sand-dark);transition:transform .12s,box-shadow .12s;font:inherit;color:inherit;display:flex;flex-direction:column;gap:6px}
+  .gcard:hover{transform:translateY(-3px);box-shadow:0 8px 0 var(--sand-dark)}
+  .gcard:focus-visible,.btn:focus-visible,.chip:focus-visible,.tile:focus-visible,.gap:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+  .gcard .ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-size:28px}
+  .gcard h3{margin:4px 0 0;font-size:21px}
+  .gcard p{margin:0;color:var(--muted);font-size:15px}
+  .gcard .unit{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--sea)}
+  .panel{background:var(--card);border-radius:var(--radius);padding:22px;margin-top:20px;box-shadow:0 5px 0 var(--sand-dark)}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  .top h2{margin:0;color:var(--sea-dark);font-size:26px}
+  .progress{height:12px;background:var(--sea-light);border-radius:99px;overflow:hidden;margin:14px 0 6px}
+  .progress > div{height:100%;background:linear-gradient(90deg,var(--sea),var(--palm));width:0;transition:width .3s}
+  .meta{color:var(--muted);font-size:14px;display:flex;justify-content:space-between}
+  .how{background:var(--sea-light);border-radius:12px;padding:10px 14px;margin:12px 0 4px;font-size:15px}
+  .q{font-size:clamp(22px,4vw,30px);text-align:center;margin:26px 0 18px;font-family:'Fredoka',sans-serif;line-height:1.5}
+  .opts{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+  .btn{border:none;border-radius:14px;padding:12px 20px;font-size:19px;font-weight:600;cursor:pointer;background:var(--sea);color:#fff;box-shadow:0 4px 0 var(--sea-dark);transition:transform .08s}
+  .btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--sea-dark)}
+  .btn.alt{background:#fff;color:var(--sea-dark);box-shadow:0 4px 0 var(--sand-dark);border:2px solid var(--sand-dark)}
+  .btn.sun{background:var(--sun);color:var(--ink);box-shadow:0 4px 0 #c98f1d}
+  .btn.small{font-size:15px;padding:8px 14px}
+  .btn[disabled]{opacity:.5;cursor:default}
+  .btn.right{background:var(--good);box-shadow:0 4px 0 #1f6e3f}
+  .btn.wrong{background:var(--bad);box-shadow:0 4px 0 #9b302d}
+  .feedback{min-height:56px;text-align:center;margin-top:16px;font-size:18px;font-weight:600}
+  .feedback.good{color:var(--good)} .feedback.bad{color:var(--bad)}
+  .row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .tiles{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+  .tile{width:54px;height:62px;border-radius:12px;border:none;background:var(--sand);box-shadow:0 4px 0 var(--sand-dark);font-size:30px;font-weight:600;cursor:pointer;color:var(--ink)}
+  .tile.right{background:#d6f2df;box-shadow:0 4px 0 #8fcfa4;color:#1f6e3f;text-decoration:line-through}
+  .tile.wrong{background:#f8d9d7;box-shadow:0 4px 0 #e4a19d}
+  .sentence{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;row-gap:10px;font-family:'Fredoka',sans-serif;font-size:clamp(20px,3.6vw,27px);margin:26px 0 8px}
+  .sentence .w{padding:4px 2px}
+  .gap{width:26px;height:40px;border:none;background:transparent;cursor:pointer;border-radius:8px;position:relative;font-size:30px;font-weight:700;color:var(--coral);line-height:1}
+  .gap::after{content:'';position:absolute;left:50%;top:8px;bottom:8px;width:2px;background:var(--sand-dark);transform:translateX(-50%)}
+  .gap:hover{background:var(--sea-light)}
+  .gap.placed::after{display:none}
+  .gap.wrongspot{background:#f8d9d7}
+  .builder{display:grid;gap:14px;margin-top:16px}
+  .builder h4{margin:0 0 6px;font-family:'Fredoka',sans-serif;font-size:17px;color:var(--sea-dark)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:2px solid var(--sand-dark);background:#fff;border-radius:999px;padding:7px 14px;font-size:17px;cursor:pointer;color:var(--ink)}
+  .chip.on{background:var(--sea);border-color:var(--sea);color:#fff}
+  .phrase{background:var(--sand);border-radius:14px;padding:18px;text-align:center;font-family:'Fredoka',sans-serif;font-size:clamp(22px,4vw,30px);min-height:76px;display:flex;align-items:center;justify-content:center}
+  .phrase .adj{color:var(--coral)} .phrase .noun{color:var(--sea-dark);text-decoration:underline;text-underline-offset:5px} .phrase .prep{color:var(--palm)}
+  .legend{display:flex;gap:16px;justify-content:center;font-size:14px;color:var(--muted);flex-wrap:wrap}
+  .legend b{font-weight:700}
+  .memory{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+  @media (max-width:560px){.memory{grid-template-columns:repeat(3,1fr)}}
+  .mcard{aspect-ratio:1/1;border-radius:14px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:6px;background:var(--sea);color:#fff;box-shadow:0 4px 0 var(--sea-dark);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.2}
+  .mcard .back{font-size:26px}
+  .mcard.up{background:#fff;color:var(--ink);box-shadow:0 4px 0 var(--sand-dark);border:2px solid var(--sand-dark)}
+  .mcard.word.up{font-family:'Fredoka',sans-serif;font-size:19px;color:var(--sea-dark)}
+  .mcard.done{background:#d6f2df;color:#1f6e3f;box-shadow:0 4px 0 #8fcfa4;border:none;cursor:default}
+  .spell{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .spell input{font-family:'Fredoka',sans-serif;font-size:26px;padding:10px 16px;border-radius:14px;border:3px solid var(--sand-dark);width:min(320px,100%);text-align:center}
+  .spell input:focus{outline:none;border-color:var(--sea)}
+  .hint{color:var(--muted);text-align:center;font-size:18px;margin-top:10px;min-height:28px}
+  .done-box{text-align:center;padding:20px 0 6px}
+  .done-box .big{font-family:'Fredoka',sans-serif;font-size:44px;color:var(--sea-dark);margin:6px 0}
+  .review{max-width:520px;margin:12px auto 0;text-align:left;background:var(--sand);border-radius:12px;padding:12px 16px;font-size:15px}
+  .review li{margin:3px 0}
+  .pop{animation:pop .35s ease}
+  @keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+  .shake{animation:shake .35s ease}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  .tutor{margin-top:26px;font-size:14px;color:var(--muted);text-align:center}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Island Word Games</h1>
+      <p>Month 1 · Island Adventures · Sian's English</p>
+    </div>
+    <div class="stars" aria-live="polite">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#f6b93b" stroke="#c98f1d" stroke-width="1.2" d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>
+      <span id="starCount">0</span> stars
+    </div>
+  </header>
+
+  <section id="home">
+    <div class="grid" id="menu"></div>
+    <p class="tutor">Each game has 10 rounds. Get 1 star for every right answer. Play the games in any order, and come back to beat your score.</p>
+  </section>
+
+  <section id="game" class="panel hidden" aria-live="polite">
+    <div class="top">
+      <h2 id="gTitle"></h2>
+      <button class="btn alt small" id="backBtn">← All games</button>
+    </div>
+    <div class="how" id="gHow"></div>
+    <div class="progress"><div id="bar"></div></div>
+    <div class="meta"><span id="roundTxt"></span><span id="scoreTxt"></span></div>
+    <div id="stage"></div>
+    <div class="feedback" id="fb"></div>
+    <div class="row" id="nextRow"></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  // ---------- helpers ----------
+  const $ = s => document.querySelector(s);
+  const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+  const el = (tag, attrs={}, kids=[]) => { const e=document.createElement(tag); for(const k in attrs){ if(k==='class') e.className=attrs[k]; else if(k==='html') e.innerHTML=attrs[k]; else if(k.startsWith('on')) e.addEventListener(k.slice(2),attrs[k]); else e.setAttribute(k,attrs[k]); } (Array.isArray(kids)?kids:[kids]).forEach(c=>{ if(c==null) return; e.appendChild(typeof c==='string'?document.createTextNode(c):c); }); return e; };
+  const cheers = ['Brilliant!','Spot on!','Super!','Excellent!','You got it!','Fantastic!','Well done!'];
+  const cheer = () => cheers[Math.floor(Math.random()*cheers.length)];
+
+  let stars = 0;
+  try { stars = parseInt(localStorage.getItem('sianIslandStars')||'0',10)||0; } catch(e){}
+  const starEl = $('#starCount');
+  starEl.textContent = stars;
+  function addStar(){ stars++; starEl.textContent = stars; starEl.parentElement.classList.remove('pop'); void starEl.offsetWidth; starEl.parentElement.classList.add('pop'); try{localStorage.setItem('sianIslandStars',String(stars));}catch(e){} }
+
+  // ---------- data ----------
+  const ENDINGS = [
+    ['deli','cious','The root is not a word, but remember: deli-CIOUS.'],['pre','cious',''],['spa','cious','Root word: space (ends in -ce) → -cious.'],
+    ['vi','cious','Root word: vice (ends in -ce) → -cious.'],['suspi','cious',''],['gra','cious','Root word: grace (ends in -ce) → -cious.'],
+    ['cau','tious','Root word: caution → -tious.'],['ambi','tious','Root word: ambition → -tious.'],['nutri','tious','Root word: nutrition → -tious.'],['infec','tious','Root word: infection → -tious.'],
+    ['spe','cial','After a vowel (e) → -cial.'],['offi','cial','After a vowel (i) → -cial.'],['so','cial','After a vowel (o) → -cial.'],['artifi','cial','After a vowel (i) → -cial.'],['cru','cial','After a vowel (u) → -cial.'],
+    ['par','tial','After a consonant (r) → -tial.'],['essen','tial','After a consonant (n) → -tial.'],['poten','tial','After a consonant (n) → -tial.'],['confiden','tial','After a consonant (n) → -tial.'],
+    ['ini','tial','Rule-breaker! There is a vowel before it, but it is -tial.']
+  ];
+  const SILENT = [
+    ['island',[1]],['doubt',[3]],['climb',[4]],['thumb',[4]],['knee',[0]],['knowledge',[0,3]],['wrestle',[0,4]],['answer',[2]],
+    ['honest',[0]],['solemn',[5]],['lamb',[3]],['comb',[3]],['write',[0]],['castle',[3]],['listen',[3]],['knock',[0]],['wrist',[0]],['hour',[0]]
+  ];
+  const COMMAS = [
+    ['In the afternoon Mia climbed the hill.',3],['Silently the crab disappeared into its hole.',1],['Beneath the palm trees she found a coconut.',4],
+    ['As the sun set the sky turned orange.',4],['Without warning a wave crashed over the rocks.',2],['At the foot of the cliffs Mia found a bottle.',6],
+    ['Slowly she unrolled the paper.',1],['That night the frogs were silent.',2],['Every morning Mia checked the sea for boats.',2],
+    ['With shaking fingers she pulled out the cloth.',3],['After a long walk Mia found the stream.',4],['Carefully Mia climbed down the rocks.',1],
+    ['High in the trees the orangutan built a nest.',4],['Before breakfast Mia built a shelter.',2]
+  ];
+  const LINKERS = [
+    ['Orangutans eat mostly fruit.','they eat leaves and bark.','In addition,',['In addition,','However,','Finally,']],
+    ['Forests are being cut down.','orangutans are losing their homes.','As a result,',['As a result,','Similarly,','Firstly,']],
+    ['Gorillas live on the ground.','orangutans live in the trees.','However,',['However,','Next,','In addition,']],
+    ['Mia was scared.','she decided to be brave.','However,',['However,','Therefore,','Firstly,']],
+    ['She packed her bottle, her stick and her shells.','she set off.','Finally,',['Finally,','However,','Similarly,']],
+    ['First, Mia found fresh water.','she built a shelter.','Next,',['Next,','However,','As a result,']],
+    ['Sea turtles eat jellyfish.','they sometimes swallow plastic bags by mistake.','Because of this,',['Because of this,','Firstly,','On the other hand,']],
+    ['Orangutans weave nests from twigs.','some birds weave nests from grass.','Similarly,',['Similarly,','Finally,','Therefore,']],
+    ['The stream was fresh and clear.','Mia drank as much as she could.','Therefore,',['Therefore,','However,','Firstly,']],
+    ['Some turtles eat seagrass.','others eat crabs and sponges.','On the other hand,',['On the other hand,','Therefore,','Next,']],
+    ['The note told her where the water was.','it warned her about the north beach.','Also,',['Also,','However,','Finally,']]
+  ];
+  const VOCAB = [
+    ['gritty','rough, with tiny hard bits'],['tangled','twisted together messily'],['gurgling','a bubbling sound'],['wheeling','flying round in circles'],
+    ['scuttled','ran with short, quick steps'],['innocent','looking harmless'],['trickling','flowing slowly in a thin stream'],['crumbly','breaks easily into bits'],
+    ['lopsided','one side bigger than the other'],['arranged','put in a careful order'],['shaggy','long, thick, untidy hair'],['canopy','the top layer of a forest'],
+    ['species','a group of the same kind of animal'],['orphaned','without parents'],['remarkable','worth noticing; amazing'],['sloshed','splashed about']
+  ];
+  const NOUNS = ['cave','waves','forest','bottle','cliff','hut','parrot','beach','island','raft'];
+  const ADJS = ['dark','damp','ancient','tiny','enormous','glittering','crumbling','silent','golden','twisted','foaming','rocky','colourful','wooden','mysterious','old'];
+  const PREPS = ['with a narrow entrance','beneath the cliffs','on the empty shore','near the stream','in the shadows','under the palm trees','with a cracked roof','beside the rock pool','at the edge of the forest','with bright feathers'];
+  const DICT = [
+    ['delicious','The mango was delicious.'],['precious','Her life jacket was precious to her.'],['spacious','The cave was dry and spacious.'],['vicious','A vicious wind blew across the bay.'],
+    ['suspicious','Mia felt suspicious of the footprints.'],['gracious','The old man gave a gracious smile.'],['cautious','She was cautious on the slippery rocks.'],['ambitious','Mia was ambitious and wanted to build a raft.'],
+    ['nutritious','Coconuts are nutritious.'],['infectious','Her laughter was infectious.'],['special','The shells were special to Mia.'],['official','She waited for an official rescue boat.'],
+    ['social','Monkeys are social animals.'],['artificial','The flowers were real, not artificial.'],['crucial','It was crucial to find shade.'],['partial','There was a partial footprint in the mud.'],
+    ['essential','Fresh water is essential.'],['potential','The cave had the potential to be a good home.'],['confidential','The map was confidential.'],['initial','Her initial plan was to climb the hill.'],
+    ['island','Orangutans live on an island.'],['doubt','There is no doubt that they are clever.'],['climb','They climb high into the trees.'],['thumb','The orangutan grips the branch with its thumb.'],
+    ['knee','The baby sat on its mother’s knee.'],['knowledge','Young orangutans gain knowledge from their mothers.'],['wrestle','Young males sometimes wrestle in play.'],['answer','Write the answer in a full sentence.'],
+    ['honest','Please give an honest opinion.'],['solemn','The old male had a solemn face.']
+  ];
+
+  // ---------- menu ----------
+  const GAMES = [
+    {id:'endings',title:'Shell Endings',unit:'Units 1 & 2 · Spelling',ic:'🐚',bg:'#fde4dc',desc:'Pick the right ending: -cious or -tious? -cial or -tial?',how:'Read the start of the word, then tap the ending that finishes it correctly.'},
+    {id:'silent',title:'Silent Letter Hunt',unit:'Unit 3 · Spelling',ic:'🔍',bg:'#e2f3e7',desc:'Some letters hide! Tap the letter you can’t hear.',how:'Say the word out loud. Tap a letter that is written but not heard.'},
+    {id:'commas',title:'Comma Catcher',unit:'Unit 2 · Grammar',ic:'🦀',bg:'#fff1d0',desc:'Each sentence starts with a fronted adverbial. Where does the comma go?',how:'Tap the gap where the comma belongs: straight after the fronted adverbial.'},
+    {id:'builder',title:'Noun Phrase Builder',unit:'Unit 1 · Grammar',ic:'🏝️',bg:'#d7f1f2',desc:'Build a super noun phrase with two adjectives and a prepositional phrase.',how:'Pick 2 adjectives and 1 phrase, then read your noun phrase aloud and say a sentence with it.'},
+    {id:'linkers',title:'Linker Lagoon',unit:'Unit 3 · Grammar',ic:'🌊',bg:'#dfe9fb',desc:'Join two sentences with the best linking adverbial.',how:'Read both sentences. Choose the linking adverbial that makes the best sense.'},
+    {id:'memory',title:'Word Treasure Match',unit:'Word Power · Units 1–3',ic:'💎',bg:'#efe6fb',desc:'Flip cards to match each word to its meaning.',how:'Turn over two cards. If the word matches its meaning, you keep them!'},
+    {id:'dictation',title:'Listen & Spell',unit:'All spelling words',ic:'🎧',bg:'#fde4dc',desc:'Hear a word in a sentence, then type it.',how:'Tap Listen to hear the word. Type it and press Check. Stuck? Tap Hint.'}
+  ];
+  const menu = $('#menu');
+  GAMES.forEach(g=>{
+    menu.appendChild(el('button',{class:'gcard',onclick:()=>start(g.id)},[
+      el('div',{class:'ic',style:'background:'+g.bg},g.ic),
+      el('div',{class:'unit'},g.unit),
+      el('h3',{},g.title),
+      el('p',{},g.desc)
+    ]));
+  });
+
+  // ---------- game engine ----------
+  let G = null; // current game state
+  const stage = $('#stage'), fb = $('#fb'), nextRow = $('#nextRow');
+  $('#backBtn').addEventListener('click', goHome);
+  function goHome(){ $('#game').classList.add('hidden'); $('#home').classList.remove('hidden'); try{speechSynthesis.cancel();}catch(e){} window.scrollTo(0,0); }
+
+  function start(id){
+    const meta = GAMES.find(g=>g.id===id);
+    $('#home').classList.add('hidden'); $('#game').classList.remove('hidden');
+    $('#gTitle').textContent = meta.title; $('#gHow').textContent = meta.how;
+    G = {id, round:0, total:10, score:0, missed:[], items:[]};
+    if(id==='endings') G.items = shuffle(ENDINGS).slice(0,10);
+    if(id==='silent') G.items = shuffle(SILENT).slice(0,10);
+    if(id==='commas') G.items = shuffle(COMMAS).slice(0,10);
+    if(id==='linkers') G.items = shuffle(LINKERS).slice(0,10);
+    if(id==='dictation') G.items = shuffle(DICT).slice(0,10);
+    if(id==='builder') { G.total = 5; G.items = shuffle(NOUNS).slice(0,5); }
+    if(id==='memory') { G.total = 1; }
+    window.scrollTo(0,0);
+    render();
+  }
+
+  function updateMeta(){
+    $('#bar').style.width = (G.round/G.total*100)+'%';
+    $('#roundTxt').textContent = G.id==='memory' ? 'Find all 6 pairs' : 'Round '+Math.min(G.round+1,G.total)+' of '+G.total;
+    $('#scoreTxt').textContent = 'Score: '+G.score;
+  }
+  function setFb(msg, good){ fb.textContent = msg; fb.className = 'feedback '+(good===true?'good':good===false?'bad':''); }
+  function showNext(){
+    nextRow.innerHTML='';
+    const b = el('button',{class:'btn sun',onclick:()=>{G.round++; render();}}, G.round+1>=G.total ? 'See my score →' : 'Next →');
+    nextRow.appendChild(b); b.focus();
+  }
+  function right(msg){ G.score++; addStar(); setFb(cheer()+(msg?' '+msg:''), true); updateMeta(); showNext(); }
+  function wrong(msg, missed){ if(missed) G.missed.push(missed); setFb(msg, false); updateMeta(); showNext(); }
+
+  function render(){
+    stage.innerHTML=''; nextRow.innerHTML=''; setFb('');
+    updateMeta();
+    if(G.round>=G.total) return finish();
+    ({endings:rEndings,silent:rSilent,commas:rCommas,builder:rBuilder,linkers:rLinkers,memory:rMemory,dictation:rDictation})[G.id]();
+  }
+
+  function finish(){
+    $('#bar').style.width='100%'; $('#roundTxt').textContent='Finished!';
+    const max = G.id==='memory' ? 6 : G.id==='builder' ? 5 : G.total;
+    const pct = G.score/max;
+    const msg = pct===1 ? 'Perfect score! You are a word explorer!' : pct>=0.7 ? 'Great work! Nearly there.' : 'Good try! Play again to beat your score.';
+    const box = el('div',{class:'done-box'},[
+      el('div',{},'You scored'),
+      el('div',{class:'big'}, G.score+' / '+max),
+      el('div',{},msg)
+    ]);
+    if(G.missed.length){
+      const ul = el('ul',{}); G.missed.forEach(m=>ul.appendChild(el('li',{},m)));
+      box.appendChild(el('div',{class:'review'},[el('strong',{},'Practise these:'),ul]));
+    }
+    stage.appendChild(box);
+    nextRow.appendChild(el('button',{class:'btn',onclick:()=>start(G.id)},'Play again'));
+    nextRow.appendChild(el('button',{class:'btn alt',onclick:goHome},'Choose another game'));
+  }
+
+  // ---------- 1. endings ----------
+  function rEndings(){
+    const [stem, ans, tip] = G.items[G.round];
+    const opts = ans.endsWith('ous') ? ['cious','tious'] : ['cial','tial'];
+    const q = el('div',{class:'q'},[stem, el('span',{style:'color:var(--coral)'},' ____')]);
+    stage.appendChild(q);
+    const box = el('div',{class:'opts'});
+    opts.forEach(o=>{
+      const b = el('button',{class:'btn',onclick:()=>{
+        box.querySelectorAll('button').forEach(x=>x.disabled=true);
+        q.innerHTML=''; q.appendChild(document.createTextNode(stem)); q.appendChild(el('span',{style:'color:var(--palm)'},ans));
+        if(o===ans){ b.classList.add('right'); right(tip); }
+        else { b.classList.add('wrong'); q.classList.add('shake'); wrong('Not quite – it’s '+stem+ans+'. '+tip, stem+ans); }
+      }},'-'+o);
+      box.appendChild(b);
+    });
+    stage.appendChild(box);
+  }
+
+  // ---------- 2. silent letters ----------
+  function rSilent(){
+    const [word, idxs] = G.items[G.round];
+    stage.appendChild(el('div',{class:'q'},'Which letter is silent?'));
+    const t = el('div',{class:'tiles'});
+    word.split('').forEach((ch,i)=>{
+      const b = el('button',{class:'tile','aria-label':'letter '+ch,onclick:()=>{
+        t.querySelectorAll('button').forEach(x=>x.disabled=true);
+        if(idxs.includes(i)){ b.classList.add('right'); right('The '+ch+' in “'+word+'” is silent.'); }
+        else { b.classList.add('wrong'); idxs.forEach(k=>t.children[k].classList.add('right')); wrong('Listen again: the silent letter is '+idxs.map(k=>'“'+word[k]+'”').join(' or ')+'.', word); }
+      }},ch);
+      t.appendChild(b);
+    });
+    stage.appendChild(t);
+  }
+
+  // ---------- 3. commas ----------
+  function rCommas(){
+    const [sentence, after] = G.items[G.round];
+    const words = sentence.split(' ');
+    const s = el('div',{class:'sentence'});
+    words.forEach((w,i)=>{
+      s.appendChild(el('span',{class:'w'},w));
+      if(i < words.length-1){
+        const g = el('button',{class:'gap','aria-label':'put comma after '+w,onclick:()=>{
+          s.querySelectorAll('.gap').forEach(x=>x.disabled=true);
+          const correctGap = s.querySelectorAll('.gap')[after-1];
+          correctGap.textContent=','; correctGap.classList.add('placed');
+          const fronted = words.slice(0,after).join(' ');
+          if(i===after-1){ right('“'+fronted+'” is the fronted adverbial.'); }
+          else { g.classList.add('wrongspot'); wrong('The comma goes after “'+fronted+'” – that’s the fronted adverbial.', fronted+', '+words.slice(after).join(' ')); }
+        }});
+        s.appendChild(g);
+      }
+    });
+    stage.appendChild(s);
+  }
+
+  // ---------- 4. noun phrase builder ----------
+  function rBuilder(){
+    const noun = G.items[G.round];
+    const pickA = []; let pickP = null;
+    const adjs = shuffle(ADJS).slice(0,8), preps = shuffle(PREPS).slice(0,5);
+    const phrase = el('div',{class:'phrase'});
+    const done = el('button',{class:'btn sun',disabled:'true',onclick:finishBuild},'I said it in a sentence ✓');
+    function draw(){
+      phrase.innerHTML='';
+      const first = pickA[0] || noun;
+      const art = /^[aeiou]/i.test(first) ? 'an ' : 'a ';
+      phrase.appendChild(document.createTextNode(noun.endsWith('s')&&!pickA.length ? 'the ' : (noun.endsWith('s') ? 'the ' : art)));
+      if(pickA.length) phrase.appendChild(el('span',{class:'adj'}, pickA.join(', ')+' '));
+      phrase.appendChild(el('span',{class:'noun'}, noun));
+      if(pickP) phrase.appendChild(el('span',{class:'prep'},' '+pickP));
+      done.disabled = !(pickA.length===2 && pickP);
+    }
+    function chipRow(list, isAdj){
+      const c = el('div',{class:'chips'});
+      list.forEach(w=>{
+        const b = el('button',{class:'chip',onclick:()=>{
+          if(isAdj){
+            const k = pickA.indexOf(w);
+            if(k>-1){ pickA.splice(k,1); b.classList.remove('on'); }
+            else if(pickA.length<2){ pickA.push(w); b.classList.add('on'); }
+            else { setFb('Only two adjectives – tap one to swap it out.', null); return; }
+          } else {
+            c.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+            pickP = (pickP===w) ? null : w; if(pickP) b.classList.add('on');
+          }
+          setFb(''); draw();
+        }},w);
+        c.appendChild(b);
+      });
+      return c;
+    }
+    function finishBuild(){
+      done.disabled = true;
+      stage.querySelectorAll('.chip').forEach(x=>x.disabled=true);
+      phrase.classList.add('pop');
+      right('Notice the comma between your two adjectives.');
+    }
+    stage.appendChild(el('div',{class:'builder'},[
+      el('div',{},[el('h4',{},'1. Pick two adjectives'), chipRow(adjs,true)]),
+      el('div',{},[el('h4',{},'2. Pick a prepositional phrase'), chipRow(preps,false)]),
+      el('div',{},[el('h4',{},'3. Your expanded noun phrase'), phrase]),
+      el('div',{class:'legend'},[el('span',{html:'<b style="color:var(--coral)">adjectives</b>'}),el('span',{html:'<b style="color:var(--sea-dark)">noun</b>'}),el('span',{html:'<b style="color:var(--palm)">prepositional phrase</b>'})]),
+      el('div',{class:'row'},[done])
+    ]));
+    draw();
+  }
+
+  // ---------- 5. linkers ----------
+  function rLinkers(){
+    const [s1, s2, ans, opts] = G.items[G.round];
+    const blank = el('span',{style:'color:var(--coral)'},'_______ ');
+    stage.appendChild(el('div',{class:'q',style:'font-size:clamp(19px,3.4vw,25px)'},[s1+' ', blank, s2]));
+    const box = el('div',{class:'opts'});
+    shuffle(opts).forEach(o=>{
+      const b = el('button',{class:'btn',onclick:()=>{
+        box.querySelectorAll('button').forEach(x=>x.disabled=true);
+        blank.textContent = ans+' '; blank.style.color='var(--palm)';
+        if(o===ans){ b.classList.add('right'); right(); }
+        else { b.classList.add('wrong'); wrong('The best fit is “'+ans+'”', ans+' '+s2); }
+      }},o.replace(/,$/,''));
+      box.appendChild(b);
+    });
+    stage.appendChild(box);
+  }
+
+  // ---------- 6. memory ----------
+  function rMemory(){
+    const pairs = shuffle(VOCAB).slice(0,6);
+    const cards = shuffle(pairs.flatMap((p,i)=>[{id:i,txt:p[0],kind:'word'},{id:i,txt:p[1],kind:'mean'}]));
+    let open = [], matched = 0, tries = 0, lock = false;
+    const grid = el('div',{class:'memory'});
+    cards.forEach(c=>{
+      const b = el('button',{class:'mcard '+c.kind,'aria-label':'hidden card',onclick:()=>{
+        if(lock || b.classList.contains('up') || b.classList.contains('done')) return;
+        b.classList.add('up'); b.textContent = c.txt; b.setAttribute('aria-label',c.txt);
+        open.push({b,c});
+        if(open.length===2){
+          tries++; lock = true;
+          const [x,y] = open;
+          if(x.c.id===y.c.id && x.c.kind!==y.c.kind){
+            setTimeout(()=>{ x.b.classList.add('done'); y.b.classList.add('done'); open=[]; lock=false; matched++; G.score++; addStar(); updateMeta();
+              setFb(cheer()+' “'+pairs[x.c.id][0]+'” means '+pairs[x.c.id][1]+'.', true);
+              if(matched===6){ setFb('All pairs found in '+tries+' turns!', true); G.round=1; nextRow.innerHTML=''; nextRow.appendChild(el('button',{class:'btn sun',onclick:render},'See my score →')); }
+            },350);
+          } else {
+            setTimeout(()=>{ [x,y].forEach(o=>{o.b.classList.remove('up'); o.b.innerHTML='<span class="back">?</span>'; o.b.setAttribute('aria-label','hidden card');}); open=[]; lock=false; setFb('Not a match – try to remember where they are!', null); },1100);
+          }
+        }
+      }}, el('span',{class:'back'},'?'));
+      grid.appendChild(b);
+    });
+    stage.appendChild(grid);
+  }
+
+  // ---------- 7. dictation ----------
+  let voice = null;
+  function pickVoice(){ try{ const vs = speechSynthesis.getVoices(); voice = vs.find(v=>/en-GB/i.test(v.lang)) || vs.find(v=>/^en/i.test(v.lang)) || null; }catch(e){} }
+  try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
+  function say(text){
+    try{
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text); u.rate = 0.85; u.lang='en-GB'; if(voice) u.voice = voice;
+      speechSynthesis.speak(u); return true;
+    }catch(e){ return false; }
+  }
+  function rDictation(){
+    const [word, sentence] = G.items[G.round];
+    stage.appendChild(el('div',{class:'q'},'Listen, then spell the word'));
+    const hint = el('div',{class:'hint'});
+    const input = el('input',{type:'text',autocomplete:'off',autocapitalize:'off',spellcheck:'false','aria-label':'type the word'});
+    const listen = el('button',{class:'btn',onclick:()=>{ if(!say(word+'. '+sentence+'. '+word+'.')) hint.textContent='Sound isn’t working here – ask your tutor to read it, or tap Hint.'; input.focus(); }},'🔊 Listen');
+    const hintBtn = el('button',{class:'btn alt',onclick:()=>{ hint.textContent = sentence.replace(new RegExp(word,'i'), word[0]+' _ '.repeat(word.length-1).trim()); }},'Hint');
+    const check = el('button',{class:'btn sun',onclick:doCheck},'Check');
+    function doCheck(){
+      const v = input.value.trim().toLowerCase();
+      if(!v){ input.classList.add('shake'); setTimeout(()=>input.classList.remove('shake'),400); return; }
+      [input,check,hintBtn].forEach(x=>x.disabled=true);
+      hint.textContent = sentence;
+      if(v===word){ input.style.borderColor='var(--good)'; right(); }
+      else { input.style.borderColor='var(--bad)'; wrong('It’s spelled: '+word.toUpperCase().split('').join(' '), word+' (you wrote '+v+')'); }
+    }
+    input.addEventListener('keydown',e=>{ if(e.key==='Enter') doCheck(); });
+    stage.appendChild(el('div',{class:'spell'},[listen, hintBtn]));
+    stage.appendChild(el('div',{class:'spell'},[input, check]));
+    stage.appendChild(hint);
+  }
+})();
+</script>
+</body>
+</html>
