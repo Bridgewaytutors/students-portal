@@ -1,17 +1,17 @@
 :root {
-  --bg: #f4f5f2;
+  --bg: #f6f5f1;
   --surface: #ffffff;
-  --surface-2: #f8f9f7;
-  --ink: #17232a;
-  --ink-2: #4b5960;
-  --ink-3: #7b878c;
-  --line: #e2e5e1;
-  --line-2: #d2d7d2;
-  --primary: #0f4c5c;
+  --surface-2: #f9f8f5;
+  --ink: #0b1f3f;
+  --ink-2: #4c5873;
+  --ink-3: #7a8499;
+  --line: #e5e3dc;
+  --line-2: #d6d3ca;
+  --primary: #0d2b5e;
   --primary-ink: #ffffff;
-  --primary-soft: #e3eef0;
-  --primary-hover: #0b3a46;
-  --accent: #e36414;
+  --primary-soft: #e7ecf5;
+  --primary-hover: #081d42;
+  --accent: #c8962f;
   --danger: #b42318;
   --danger-soft: #fdecea;
   --ok: #1b7f4b;
@@ -25,15 +25,15 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1518; --surface: #172025; --surface-2: #1c272c; --ink: #e8eef0; --ink-2: #a9b6bb; --ink-3: #7d8b90;
-    --line: #26333a; --line-2: #33434b; --primary: #5fb3c4; --primary-ink: #082a32; --primary-soft: #18343b; --primary-hover: #7cc6d5;
+    --bg: #0c1424; --surface: #131e33; --surface-2: #19263f; --ink: #eef2f8; --ink-2: #a8b4c8; --ink-3: #7c89a1;
+    --line: #24314a; --line-2: #31405c; --primary: #e2b65a; --primary-ink: #1a1405; --primary-soft: #2e2a1c; --primary-hover: #efc775; --accent: #e2b65a;
     --danger: #f97066; --danger-soft: #3a1d1b; --ok: #47c486; --ok-soft: #15301f; --warn: #f5b74f; --warn-soft: #36290f;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.25); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #0f1518; --surface: #172025; --surface-2: #1c272c; --ink: #e8eef0; --ink-2: #a9b6bb; --ink-3: #7d8b90;
-  --line: #26333a; --line-2: #33434b; --primary: #5fb3c4; --primary-ink: #082a32; --primary-soft: #18343b; --primary-hover: #7cc6d5;
+  --bg: #0c1424; --surface: #131e33; --surface-2: #19263f; --ink: #eef2f8; --ink-2: #a8b4c8; --ink-3: #7c89a1;
+  --line: #24314a; --line-2: #31405c; --primary: #e2b65a; --primary-ink: #1a1405; --primary-soft: #2e2a1c; --primary-hover: #efc775; --accent: #e2b65a;
   --danger: #f97066; --danger-soft: #3a1d1b; --ok: #47c486; --ok-soft: #15301f; --warn: #f5b74f; --warn-soft: #36290f;
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 28px rgba(0,0,0,.25); color-scheme: dark;
 }
@@ -54,11 +54,9 @@ button, input { font: inherit; color: inherit; }
 /* top bar */
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--surface); position: sticky; top: 0; z-index: 10; }
 .brand { display: flex; align-items: center; gap: 10px; }
-.brand-mark { width: 32px; height: 32px; }
-.brand-mark rect { fill: var(--primary); }
-.brand-mark path { stroke: var(--primary-ink); stroke-width: 2.4; fill: none; stroke-linecap: round; }
+.brand-mark { width: 36px; height: 36px; object-fit: contain; border-radius: 9px; background: #fff; padding: 2px; border: 1px solid var(--line); }
 .brand-name { display: block; font-weight: 650; font-size: 15px; }
-.brand-sub { display: block; font-size: 12px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .08em; }
+.brand-sub { display: block; font-size: 12px; color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
 .topbar-session { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .repo-label { font-size: 13px; color: var(--ink-2); text-decoration: none; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40vw; }
 .repo-label:hover { border-color: var(--line-2); color: var(--ink); }
