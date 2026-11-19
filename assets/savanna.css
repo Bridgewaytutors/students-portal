@@ -1,0 +1,72 @@
+/* Bridgeway "Savanna" theme — shared by the landing page, 404 page and admin.
+   Pages add class="savanna" to <body> and include the .scene markup. */
+
+.savanna {
+  --sky-top: #bfe6ff;
+  --sky-mid: #ffeec2;
+  --sky-low: #ffdb93;
+  --sun: #ffd25e;
+  --sun-glow: rgba(255, 210, 94, .35);
+  --sun-glow-2: rgba(255, 210, 94, .15);
+  --cloud: #ffffff;
+  --scene-filter: none;
+  --giraffe-filter: none;
+  background: linear-gradient(var(--sky-top) 0%, var(--sky-mid) 62%, var(--sky-low) 100%) fixed;
+  background-color: var(--sky-mid);
+}
+
+.scene { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.scene > div { position: absolute; background-repeat: no-repeat; background-position: center; background-size: contain; }
+
+.scene-sun { top: 70px; right: 14%; width: 120px; height: 120px; border-radius: 50%; background: var(--sun);
+  box-shadow: 0 0 0 18px var(--sun-glow), 0 0 0 40px var(--sun-glow-2); }
+
+.scene-cloud { background: var(--cloud) !important; border-radius: 999px; opacity: .9; }
+.scene-cloud::before, .scene-cloud::after { content: ""; position: absolute; background: var(--cloud); border-radius: 50%; }
+.scene-cloud::before { width: 55%; height: 160%; left: 15%; bottom: 20%; }
+.scene-cloud::after { width: 40%; height: 130%; right: 12%; bottom: 25%; }
+.scene-cloud.c1 { top: 110px; left: 12%; width: 130px; height: 38px; animation: drift 40s linear infinite alternate; }
+.scene-cloud.c2 { top: 200px; left: 60%; width: 100px; height: 30px; opacity: .75; animation: drift 55s linear infinite alternate-reverse; }
+
+.scene-hills { left: 0; right: 0; bottom: 0; height: 240px; background-image: url("hills.svg"); background-size: 100% 100% !important; filter: var(--scene-filter); }
+.scene-tree { left: 4%; bottom: 120px; width: 230px; height: 200px; background-image: url("tree.svg"); filter: var(--scene-filter); }
+.scene-baby { left: 18%; bottom: 40px; width: 150px; height: 250px; background-image: url("giraffe-full.svg"); filter: var(--giraffe-filter); }
+.scene-giraffe { right: 3%; bottom: -60px; width: 220px; height: 495px; background-image: url("giraffe.svg"); filter: var(--giraffe-filter);
+  transform-origin: bottom center; animation: sway 5s ease-in-out infinite; }
+
+/* Quieter version for the admin console */
+.scene-compact .scene-hills { height: 170px; }
+.scene-compact .scene-tree { width: 170px; height: 148px; bottom: 80px; left: 2%; }
+.scene-compact .scene-giraffe { width: 150px; height: 338px; right: 1.5%; bottom: -50px; }
+/* keep sky details in the low, open part of the screen so they don't poke out from behind cards */
+.scene-compact .scene-sun { width: 80px; height: 80px; top: auto; bottom: 380px; right: 2.5%; }
+.scene-compact .scene-cloud.c1 { top: auto; bottom: 300px; left: 1.5%; }
+.scene-compact .scene-cloud.c2 { display: none; }
+
+@keyframes sway { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-2.5deg); } }
+@keyframes drift { from { transform: translateX(0); } to { transform: translateX(60px); } }
+
+@media (max-width: 860px) {
+  .scene-baby { display: none; }
+  .scene-tree { width: 150px; height: 130px; left: -20px; bottom: 110px; }
+  .scene-giraffe { width: 150px; height: 338px; right: -20px; }
+  .scene-compact .scene-giraffe, .scene-compact .scene-tree { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene-giraffe, .scene-cloud { animation: none !important; }
+}
+
+/* ---------- Welcome card (landing + 404) ---------- */
+.welcome-page { margin: 0; min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: 64px 16px 150px;
+  font: 17px/1.55 Nunito, "Segoe UI", system-ui, -apple-system, sans-serif; color: #0d2b5e; }
+.welcome { position: relative; z-index: 1; width: 100%; max-width: 440px; text-align: center; background: #fff; border-radius: 28px;
+  padding: 36px 28px 32px; box-shadow: 0 2px 0 rgba(13, 43, 94, .06), 0 18px 48px rgba(13, 43, 94, .16); }
+.welcome .logo { width: 92px; height: 92px; object-fit: contain; }
+.welcome .eyebrow { margin: 10px 0 2px; font: 600 14px/1.4 Fredoka, Nunito, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #c8962f; }
+.welcome h1 { margin: 0 0 10px; font: 700 34px/1.15 Fredoka, Nunito, sans-serif; color: #0d2b5e; }
+.welcome p { margin: 0; color: #5a6378; }
+.welcome p + p { margin-top: 10px; }
+.welcome .wave { display: inline-block; animation: wave 2.4s ease-in-out infinite; transform-origin: 70% 80%; }
+@keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(14deg); } 20%, 40% { transform: rotate(-8deg); } }
+@media (max-width: 560px) { .welcome h1 { font-size: 28px; } }
+@media (prefers-reduced-motion: reduce) { .welcome .wave { animation: none; } }
