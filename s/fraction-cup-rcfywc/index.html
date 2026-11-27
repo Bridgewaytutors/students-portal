@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fraction Cup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: matchday excitement for a lively Year 7 boy; short bursts, movement breaks, instant feedback
+   IDEA: a cup tournament of penalty shootouts against rival teams, from the group stage to the final
+   PICTURE: the goalmouth with keeper and ball, and a cup path strip showing how far the player has got
+   COLOUR and TYPE: pitch green fields, chalk white, kit orange accent, gold for the trophy; Bungee + Rubik
+   LAYOUT: cup path, scoreboard, goal scene, one question card with five exam-style A to E answers */
+:root{color-scheme:light dark;
+--bg:light-dark(#e9f2e4,#0c1a0f);--ink:light-dark(#0f230f,#e8f3e4);--card:light-dark(#ffffff,#14281a);
+--line:light-dark(#cbdcc4,#2b4631);--soft:light-dark(#f3f8f0,#1a3220);--mut:light-dark(#4b6450,#a6bfa9);
+--p1:light-dark(#2f8c3f,#1b5a27);--p2:light-dark(#37a049,#21682f);--board:#0f3b1c;--gold:#f2b705;
+--acc:#ff5a1f;--acc2:light-dark(#c73d0b,#ff8a5c);--good:light-dark(#178a3e,#4fd27a);--bad:light-dark(#c62828,#ff7070)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Rubik,system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:860px;margin:0 auto;padding:12px max(3vw,12px) 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+h1{font:400 clamp(22px,4.4vw,34px)/1.05 Bungee,Rubik,sans-serif;margin:0;text-wrap:balance}
+.sub{color:var(--mut);font-size:14px;margin:2px 0 0}
+.icon{min-height:44px;padding:0 14px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:500 14px Rubik,sans-serif;cursor:pointer}
+.path{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.path span{padding:6px 10px;border-radius:999px;font-size:13px;font-weight:500;background:var(--soft);border:2px solid var(--line);color:var(--mut);white-space:nowrap}
+.path span.done{background:var(--good);border-color:var(--good);color:#fff}
+.path span.now{background:var(--acc);border-color:var(--acc);color:#fff}
+.path .clock{margin-left:auto;background:none;border:0;color:var(--ink);font-weight:700}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--board);color:#fff;border-radius:16px 16px 0 0;overflow:hidden}
+.board div{padding:8px 6px;text-align:center;border-right:1px solid #ffffff22}
+.board div:last-child{border:0}
+.board small{display:block;font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.board b{font:400 clamp(18px,4vw,26px)/1.1 Bungee,sans-serif;white-space:nowrap}
+.tbar{height:6px;background:#ffffff22}.tbar i{display:block;height:100%;width:100%;background:var(--acc);transition:width 1s linear}
+.scene{display:block;width:100%;height:auto;background:var(--p1);border-radius:0 0 16px 16px}
+#ball{transition:transform .6s cubic-bezier(.2,.75,.3,1)}
+#keeper{transform-box:fill-box;transform-origin:50% 80%;transition:transform .5s cubic-bezier(.3,.8,.3,1)}
+#msg{font:400 50px Bungee,sans-serif;opacity:0;transition:opacity .2s,transform .35s;transform-box:fill-box;transform-origin:center;transform:scale(.6)}
+#msg.on{opacity:1;transform:scale(1)}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:clamp(16px,3vw,26px);margin-top:14px}
+.q{font-size:clamp(18px,3.4vw,22px);font-weight:500;text-align:center;margin:0 0 6px;text-wrap:balance}
+.big{font-size:clamp(38px,8.5vw,56px);font-weight:700;text-align:center;margin:4px 0 14px;line-height:1;display:flex;justify-content:center;align-items:center;gap:.25em;flex-wrap:wrap}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;font-weight:700}
+.fr b:first-child{border-bottom:.09em solid currentColor;padding:0 .14em}
+.mx{display:inline-flex;align-items:center;gap:.08em;white-space:nowrap;font-weight:700}
+.opts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.opts.wide{grid-template-columns:minmax(0,1fr)}.opts.wide .opt{min-height:64px;flex-direction:row;justify-content:flex-start;gap:16px;padding:6px 16px;font-size:22px}
+.ol{display:inline-flex;align-items:center;gap:.3em;flex-wrap:wrap}.ol i{font-style:normal;opacity:.6}
+.q.wp{text-align:left;font-size:clamp(19px,3.6vw,23px);line-height:1.5;margin-bottom:14px}.q.wp .fr{font-size:1.05em;margin:0 .1em}
+.ob{display:grid;grid-template-columns:4.5em minmax(0,1fr);align-items:center;gap:10px;font-size:18px}.tr{height:18px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;background:var(--card)}.tr i{display:block;height:100%;background:var(--acc)}
+.opt{min-height:96px;border-radius:14px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font:700 24px Rubik,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .12s,border-color .12s}
+.opt:hover:not(:disabled){border-color:var(--acc);transform:translateY(-2px)}
+.opt .L{font:400 13px Bungee,sans-serif;color:var(--acc2)}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 18%,var(--card))}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--card))}
+.opt:disabled{cursor:default}
+button:focus-visible,.chip:focus-within,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.go{min-height:52px;padding:0 24px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:400 17px Bungee,sans-serif;cursor:pointer;box-shadow:0 4px 0 #b53a0c}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 #b53a0c}
+.ghost{min-height:52px;padding:0 18px;border-radius:14px;border:2px solid var(--line);background:transparent;color:var(--ink);font:500 16px Rubik,sans-serif;cursor:pointer}
+.fb{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--soft);border-left:6px solid var(--good)}
+.fb.bad{border-color:var(--bad)}
+.fb h3{margin:0 0 6px;font:400 20px Bungee,sans-serif}
+.fb ol{margin:6px 0 0;padding-left:22px}.fb li{margin:4px 0}
+.why{font-weight:500}
+.vis{margin-top:10px;display:grid;gap:6px}
+.bar{display:flex;height:22px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;background:var(--card)}
+.bar i{flex:1;border-right:1px solid var(--ink)}.bar i:last-child{border:0}.bar i.s{background:var(--acc)}
+.area{display:grid;gap:2px;width:min(100%,280px);padding:2px;background:var(--ink);border-radius:4px}
+.area i{aspect-ratio:1;background:var(--card)}.area i.l{background:color-mix(in srgb,var(--acc) 35%,var(--card))}.area i.d{background:var(--acc)}
+.grp{display:flex;flex-wrap:wrap;gap:6px}.grp span{min-width:44px;padding:6px 8px;text-align:center;border:2px solid var(--ink);border-radius:8px;font-weight:700}.grp span.s{background:var(--acc);color:#fff;border-color:var(--acc)}
+.bl{font-size:13px;color:var(--mut)}
+.hint{margin-top:12px;text-align:center;color:var(--mut);font-size:15px}
+h2{font:400 clamp(22px,4vw,30px)/1.1 Bungee,sans-serif;margin:0 0 12px;text-align:center;text-wrap:balance}
+.lab{font-weight:700;margin:16px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0}
+.chip span{display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--soft);cursor:pointer;font-weight:500}
+.chip input:checked+span{background:var(--acc);border-color:var(--acc);color:#fff}
+.name{min-height:48px;width:min(100%,280px);padding:0 14px;border-radius:12px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font:500 18px Rubik,sans-serif}
+.res{text-align:center;font:400 clamp(40px,9vw,60px)/1 Bungee,sans-serif;margin:6px 0}
+.miss{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:8px}
+.miss li{padding:10px 12px;border-radius:12px;background:var(--soft);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:18px}
+.task{font:700 clamp(22px,4.5vw,30px)/1.25 Rubik,sans-serif;text-align:center;margin:8px 0;text-wrap:balance}
+.count{text-align:center;font:400 54px/1 Bungee,sans-serif;color:var(--acc2)}
+.trophy{display:block;width:min(60%,200px);margin:0 auto 6px}
+.note{font-size:13px;color:var(--mut);text-align:center;margin-top:14px}
+@media(max-width:600px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}.opt:last-child{grid-column:1/-1}.opt{min-height:84px}.path .clock{margin-left:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1 id="title">Fraction Cup</h1><p class="sub">Fractions: ordering, equivalents, multiplying and word problems.</p></div>
+  <button class="icon" id="snd" aria-pressed="true">Sound on</button>
+</header>
+<div class="path" id="path"></div>
+<div class="board" aria-live="polite">
+  <div><small id="lS">Score</small><b id="sG">0–0</b></div>
+  <div><small>Kick</small><b id="sK">0/8</b></div>
+  <div><small>Streak</small><b id="sS">0</b></div>
+  <div><small>Shot clock</small><b id="sT">–</b></div>
+</div>
+<div class="tbar"><i id="tb"></i></div>
+<svg class="scene" viewBox="0 0 600 260" role="img" aria-label="Goal with a goalkeeper and a ball on the penalty spot">
+  <defs>
+    <pattern id="net" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 0L14 14M14 0L0 14" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/></pattern>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#123b20"/><stop offset="1" stop-color="#1d5a2c"/></linearGradient>
+  </defs>
+  <rect width="600" height="62" fill="url(#sky)"/>
+  <g id="crowd"></g><g id="stripes"></g>
+  <path d="M60 255 L130 178 L470 178 L540 255" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>
+  <line x1="0" y1="178" x2="600" y2="178" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>
+  <ellipse cx="300" cy="238" rx="5" ry="2.5" fill="#fff"/>
+  <rect x="150" y="40" width="300" height="138" fill="#0b2a13" fill-opacity=".35"/>
+  <rect x="150" y="40" width="300" height="138" fill="url(#net)"/>
+  <path d="M150 178 V40 H450 V178" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M154 178 V44 H446 V178" fill="none" stroke="#c9d6cc" stroke-width="2"/>
+  <g id="keeper">
+    <ellipse cx="300" cy="176" rx="26" ry="4" fill="#000" fill-opacity=".25"/>
+    <rect x="288" y="146" width="10" height="30" rx="4" fill="#1b1b1b"/><rect x="302" y="146" width="10" height="30" rx="4" fill="#1b1b1b"/>
+    <path id="kj" d="M270 112 L284 100 L316 100 L330 112 L322 120 L316 116 L316 150 L284 150 L284 116 L278 120 Z" fill="#7a3cff"/>
+    <path d="M284 100 L316 100 L316 108 L284 108Z" fill="#fff" fill-opacity=".35"/>
+    <text x="300" y="138" text-anchor="middle" font-family="Bungee" font-size="16" fill="#fff">1</text>
+    <rect x="288" y="76" width="24" height="24" rx="6" fill="#c4ccd4"/><rect x="292" y="84" width="16" height="6" rx="3" fill="#18e0ff"/><line x1="300" y1="76" x2="300" y2="68" stroke="#c4ccd4" stroke-width="3"/><circle cx="300" cy="67" r="3" fill="#ff5a1f"/>
+    <circle cx="266" cy="112" r="7" fill="#ffe14d"/><circle cx="334" cy="112" r="7" fill="#ffe14d"/>
+  </g>
+  <g id="ball">
+    <ellipse cx="300" cy="248" rx="11" ry="3" fill="#000" fill-opacity=".25"/>
+    <circle cx="300" cy="236" r="11" fill="#fff" stroke="#222" stroke-width="1.5"/>
+    <path d="M300 231l4 3-1.5 4.5h-5L296 234z" fill="#222"/>
+  </g>
+  <text id="msg" x="300" y="122" text-anchor="middle" fill="#fff" stroke="#0f3b1c" stroke-width="3" paint-order="stroke">GOAL!</text>
+</svg>
+
+<main class="card" id="card"></main>
+<p class="note">About an hour: 44 kicks over five rounds of fraction questions, with a movement break after each win. Questions are new every time. Keys: A–E or 1–5 to answer, Enter to carry on.</p>
+</div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gcd=(a,b)=>b?gcd(b,a%b):a;
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[R(0,a.length-1)];
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+const fr=(n,d)=>`<span class="fr"><b>${n}</b><b>${d}</b></span>`;
+const show=x=>x.t==='o'?`<span class="ol">${x.a.map(show).join('<i>,</i>')}</span>`:x.t==='n'?`<span style="white-space:nowrap">${x.u||''}${x.v}${x.s||''}</span>`:x.t==='m'?`<span class="mx">${x.w}${fr(x.n,x.d)}</span>`:fr(x.n,x.d);
+const key=x=>x.t==='o'?x.a.map(key).join(','):x.t==='n'?'n'+x.v:(x.t==='m'?x.w+' ':'')+x.n+'/'+x.d;
+const val=x=>x.t==='o'?0:x.t==='n'?x.v:(x.t==='m'?x.w:0)+x.n/x.d;
+const ok=x=>x.t==='o'?true:x.t==='n'?x.v>0:x.n>0&&x.d>1&&(x.t!=='m'||(x.w>0&&x.n<x.d));
+function norm(N,D,why){const g=gcd(N,D);N/=g;D/=g;const o=D===1?{t:'n',v:N}:N>D?{t:'m',w:Math.floor(N/D),n:N%D,d:D}:{t:'f',n:N,d:D};o.why=why;return o}
+const LV=[{q:[2,10],k:[2,5],w:[1,3],d:[2,6],xd:[2,6],xn:[2,4],xm:[2,5]},{q:[3,12],k:[2,9],w:[1,6],d:[2,10],xd:[2,9],xn:[2,6],xm:[2,10]},{q:[4,15],k:[3,12],w:[2,12],d:[3,12],xd:[2,12],xn:[2,9],xm:[3,12]}];
+const LEVELS=['Warm-up','League match','Champion level'];
+const CUP=[
+ {name:'Group stage',types:['s','m','i'],kicks:8,rival:'Robo Rovers',kit:'#7a3cff',what:'Warm-up: simplest form and mixed numbers'},
+ {name:'Round of 16',types:['oa','od'],kicks:10,rival:'Order Athletic',kit:'#e0115f',what:'Ascending and descending order'},
+ {name:'Quarter-final',types:['big','neq','miss','oa','od'],kicks:8,rival:'Equivalent Wanderers',kit:'#1565c0',what:'Largest, smallest and equivalent fractions'},
+ {name:'Semi-final',types:['x','x','w','w'],kicks:8,rival:'Multiply City',kit:'#00897b',what:'Multiplying and fractions of amounts'},
+ {name:'Final',types:['w','w','w','w','oa','od','big','neq','miss','x','s','m','i'],kicks:10,rival:'Fraction Galaxy',kit:'#111111',what:'Word problems and everything else'}];
+const BREAKS=['10 star jumps!','Dribble an imaginary ball round your chair 3 times','Jog on the spot for 20 seconds','Do your best goal celebration','Touch your toes 10 times','Hold a goalkeeper crouch for 15 seconds','Do 8 keepy-uppy knee lifts on each leg','Stretch up tall like you’re catching a high ball, 5 times'];
+let S={name:'Player',lvl:1,timer:0,from:0},sound=true;
+try{Object.assign(S,JSON.parse(localStorage.getItem('fcup')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('fcup',JSON.stringify({name:S.name,lvl:S.lvl,timer:S.timer,from:S.from}))}catch(e){}};
+const N=()=>esc(S.name||'Player');
+
+/* sound */
+let ac=null;
+function beep(f,t=.12,type='square',delay=0){if(!sound)return;try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.06,ac.currentTime+delay);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+delay+t);o.connect(g).connect(ac.destination);o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+t)}catch(e){}}
+const cheer=()=>{beep(523,.1,'square',0);beep(659,.1,'square',.1);beep(784,.25,'square',.2)};
+const groan=()=>{beep(220,.25,'sawtooth',0);beep(165,.35,'sawtooth',.2)};
+$('#snd').onclick=e=>{sound=!sound;e.target.textContent=sound?'Sound on':'Sound off';e.target.setAttribute('aria-pressed',sound)};
+
+/* scenery */
+$('#crowd').innerHTML=Array.from({length:150},(_,i)=>{const c=['#ff5a1f','#fff','#ffe14d','#7fd3ff','#ff9ad0','#c8f7a6'][i%6];return `<circle cx="${(i%50)*12+6+(Math.floor(i/50)%2)*6}" cy="${14+Math.floor(i/50)*16}" r="4.5" fill="${c}" fill-opacity=".8"/>`}).join('');
+$('#stripes').innerHTML=Array.from({length:6},(_,i)=>`<rect x="${i*100}" y="62" width="100" height="198" fill="var(--${i%2?'p1':'p2'})"/>`).join('');
+
+/* pictures for the explanations */
+const bar=(sh,tot)=>tot>48?`<div class="bar"><i class="s" style="flex:none;width:${sh/tot*100}%"></i></div>`:`<div class="bar">${Array.from({length:tot},(_,i)=>`<i${i<sh?' class="s"':''}></i>`).join('')}</div>`;
+const barsMixed=(w,n,d)=>w>6||d>16?`<div class="bl">${w} full bars of ${d} pieces, plus ${n} more pieces.</div>`:Array.from({length:w},()=>bar(d,d)).join('')+bar(n,d)+`<div class="bl">${w} wholes and ${n}/${d}: ${w*d+n} shaded pieces, each piece is 1/${d}.</div>`;
+const area=(a,b,c,d)=>b*d>120?'':`<div class="area" style="grid-template-columns:repeat(${b},1fr)">${Array.from({length:b*d},(_,i)=>{const col=i%b,row=Math.floor(i/b);return `<i class="${col<a?(row<c?'d':'l'):''}"></i>`}).join('')}</div><div class="bl">Light: ${a}/${b} of the square. Dark: ${c}/${d} of that part = ${a*c} out of ${b*d} squares.</div>`;
+const groups=(a,b,m)=>b>12?'':`<div class="grp">${Array.from({length:b},(_,i)=>`<span class="${i<a?'s':''}">${m}</span>`).join('')}</div><div class="bl">${b*m} split into ${b} equal groups of ${m}. Take ${a} groups.</div>`;
+
+/* answer picking */
+function fill(ans,ds,make){
+  const seen=new Set([key(ans)]),out=[],take=d=>{if(d&&ok(d)&&!seen.has(key(d))&&(d.eq||Math.abs(val(d)-val(ans))>1e-9)){seen.add(key(d));out.push(d)}};
+  for(const d of ds){take(d);if(out.length===4)break}
+  let g=0;while(out.length<4&&g++<300)take(make());
+  return out;
+}
+const SIMPLEST='Give your answer in its simplest form (as a mixed number if it is bigger than 1).';
+
+/* question makers */
+function genS(L){
+  let p,q;do{q=R(...L.q);p=R(1,q-1)}while(gcd(p,q)!==1);
+  const k=R(...L.k),a=p*k,b=q*k,ans={t:'f',n:p,d:q},m=a-p,ds=[],rest=[];
+  const part=[];for(let f=2;f<k;f++)if(k%f===0)part.push({t:'f',n:a/f,d:b/f,eq:1,why:`Nearly! ${fr(a/f,b/f)} is equal to it, but ${k/f} still divides both numbers. Keep going until nothing else divides both.`});
+  if(part.length)ds.push(pick(part));
+  ds.push({t:'f',n:a,d:b,eq:1,why:`That's the fraction you started with. It hasn't been simplified yet.`});
+  if(b-m>p)rest.push({t:'f',n:p,d:b-m,why:`Simplifying means <b>dividing</b> top and bottom by the same number, not subtracting.`});
+  rest.push({t:'f',n:q,d:p,why:`The top and bottom have been swapped round.`});
+  if(p+1<q)rest.push({t:'f',n:p+1,d:q,why:`Check the top: ${a} ÷ ${k} = ${p}.`});
+  rest.push({t:'f',n:p,d:q+1,why:`Check the bottom: ${b} ÷ ${k} = ${q}.`});
+  return {prompt:'Write in its simplest form:',q:fr(a,b),ans,ds:fill(ans,ds.concat(shuffle(rest)),()=>({t:'f',n:R(1,q),d:R(q+1,q+5),why:`Divide top and bottom by ${k}.`})),
+    steps:[`Find the biggest number that divides both ${a} and ${b}. It's <b>${k}</b> (the HCF).`,`${a} ÷ ${k} = ${p}  and  ${b} ÷ ${k} = ${q}`,`So ${fr(a,b)} = ${fr(p,q)}`],
+    vis:`${bar(a,b)}<div class="bl">${a}/${b}</div>${bar(p,q)}<div class="bl">${p}/${q}: the same amount shaded</div>`,hint:`Find a number that divides into both ${a} and ${b}. Try the biggest one you can.`};
+}
+function genM(L){
+  let w=R(...L.w),d,n;do{d=R(...L.d);n=R(1,d-1)}while(gcd(n,d)!==1);
+  const T=w*d+n,ans={t:'f',n:T,d};
+  const ds=shuffle([
+    {t:'f',n:w+n,d,why:`You added the whole number to the top. Multiply it by the bottom first: ${w} × ${d}.`},
+    {t:'f',n:w*n+d,d,why:`Multiply the whole number by the <b>bottom</b> (${d}), then add the top (${n}).`},
+    {t:'f',n:w*d-n,d,why:`Add the numerator on, don't take it away.`},
+    {t:'f',n:(w+1)*d+n,d,why:`That's one whole too many. There are ${w} wholes, so ${w} × ${d} = ${w*d}.`},
+    {t:'f',n:w*d,d,why:`You found the wholes (${w*d}) but forgot to add the ${n} extra pieces.`},
+    {t:'f',n:T,d:n,why:`The denominator (bottom) stays the same: ${d}.`}]);
+  return {prompt:'Write as an improper fraction:',q:show({t:'m',w,n,d}),ans,ds:fill(ans,ds,()=>({t:'f',n:T+R(-3,3),d,why:`${w} × ${d} + ${n} = ${T}.`})),
+    steps:[`Each whole has ${d} pieces, so ${w} wholes = ${w} × ${d} = <b>${w*d}</b> pieces.`,`Add the extra pieces: ${w*d} + ${n} = <b>${T}</b>`,`The bottom stays the same: ${fr(T,d)}`],
+    vis:barsMixed(w,n,d),hint:`Multiply the whole number by the bottom, then add the top. The bottom stays the same.`};
+}
+function genI(L){
+  let w=R(...L.w),d,r;do{d=R(...L.d);r=R(1,d-1)}while(gcd(r,d)!==1);
+  const T=w*d+r,ans={t:'m',w,n:r,d};
+  const ds=shuffle([
+    {t:'m',w,n:d-r,d,why:`The remainder is ${T} − ${w*d} = ${r}, not ${d-r}.`},
+    {t:'m',w:w+1,n:r,d,why:`${d} goes into ${T} only ${w} times (${w} × ${d} = ${w*d}).`},
+    {t:'m',w:w-1,n:r,d,why:`${d} goes into ${T} ${w} times, not ${w-1}.`},
+    {t:'m',w:r,n:w,d,why:`The whole number and the remainder have been swapped.`},
+    {t:'m',w,n:r,d:T,why:`Keep the same denominator (bottom): ${d}.`},
+    {t:'m',w,n:r+1,d,why:`Check the remainder: ${T} − ${w*d} = ${r}.`}]);
+  return {prompt:'Write as a mixed number:',q:fr(T,d),ans,ds:fill(ans,ds,()=>({t:'m',w:Math.max(1,w+R(-3,3)),n:R(1,d),d:d+R(0,1),why:`${T} ÷ ${d} = ${w} remainder ${r}.`})),
+    steps:[`How many ${d}s go into ${T}? ${w} × ${d} = ${w*d}, so <b>${w}</b> wholes.`,`Left over: ${T} − ${w*d} = <b>${r}</b>`,`So ${fr(T,d)} = ${show(ans)}`],
+    vis:barsMixed(w,r,d),hint:`Divide ${T} by ${d}. The answer is the whole number; the remainder goes on top.`};
+}
+const proper=rg=>{let a,b;do{b=R(...rg);a=R(1,b-1)}while(gcd(a,b)!==1);return [a,b]};
+function genFF(L){
+  const [a,b]=proper(L.xd),[c,d]=proper(L.xd),P=a*c,Q=b*d,g=gcd(P,Q),ans=norm(P,Q);
+  const ds=[];if(g>1)ds.push({t:'f',n:P,d:Q,eq:1,why:`Great multiplying! But ${fr(P,Q)} can still be simplified: divide top and bottom by ${g}.`});
+  ds.push(...shuffle([norm(a+c,b+d,`Don't add. Multiply the tops together and the bottoms together.`),norm(a*d,b*c,`That's cross-multiplying. Go straight across: top × top, bottom × bottom.`),
+    norm(P,b,`Multiply the bottoms too: ${b} × ${d} = ${Q}.`),norm(P,b+d,`Multiply the bottoms, don't add them: ${b} × ${d} = ${Q}.`),norm(a*c+1,Q,`Check the top: ${a} × ${c} = ${P}.`)]));
+  return {prompt:'Work out:',sub:SIMPLEST,q:`${fr(a,b)}<span>×</span>${fr(c,d)}`,ans,ds:fill(ans,ds,()=>norm(R(1,Q),Q+R(0,3),`Top × top = ${P}, bottom × bottom = ${Q}.`)),
+    steps:[`Multiply the tops: ${a} × ${c} = <b>${P}</b>`,`Multiply the bottoms: ${b} × ${d} = <b>${Q}</b>`,g>1?`Simplify ${fr(P,Q)}: divide both by ${g} to get ${show(ans)}`:`${fr(P,Q)} is already in its simplest form.`],
+    vis:area(a,b,c,d),hint:`Top × top, bottom × bottom. Then simplify.`};
+}
+function genWF(L){
+  const n=R(...L.xn),[a,b]=proper(L.xd),P=n*a,ans=norm(P,b);
+  const ds=[];if(gcd(P,b)>1||P>b)ds.push({t:'f',n:P,d:b,eq:1,why:`Right value! Now ${P>b?'change it to a mixed number':'simplify it'}${P>b&&gcd(P,b)>1?' and simplify':''}.`});
+  ds.push(...shuffle([{t:'f',n:P,d:n*b,why:`You multiplied the bottom too. That just gives a fraction equal to ${fr(a,b)}. Only multiply the top by ${n}.`},
+    norm(n+a,b,`Don't add the whole number. ${n} × ${fr(a,b)} means ${n} lots of ${fr(a,b)}, so ${n} × ${a}.`),norm(a,n*b,`That's dividing by ${n}, not multiplying.`),norm(P+b,b,`Check: ${n} × ${a} = ${P}, so it's ${fr(P,b)}.`)]));
+  return {prompt:'Work out:',sub:SIMPLEST,q:`<span>${n}</span><span>×</span>${fr(a,b)}`,ans,ds:fill(ans,ds,()=>norm(P+R(-3,4),b,`${n} × ${a} = ${P}, over ${b}.`)),
+    steps:[`${n} × ${fr(a,b)} means ${n} lots of ${fr(a,b)}.`,`Multiply the top only: ${n} × ${a} = <b>${P}</b>. The bottom stays ${b}.`,`${fr(P,b)} = ${show(ans)}`],
+    vis:n<=6&&b<=16?Array.from({length:n},()=>bar(a,b)).join('')+`<div class="bl">${n} bars with ${a}/${b} shaded each: ${P} pieces of 1/${b}.</div>`:'',hint:`Multiply the whole number by the top. The bottom stays the same.`};
+}
+function genOF(L){
+  const [a,b]=proper(L.xd),m=R(...L.xm),T=b*m,A=a*m,ans={t:'n',v:A};
+  const ds=shuffle([{t:'n',v:m,why:`You found 1/${b} (${T} ÷ ${b} = ${m}). Now multiply by ${a}.`},{t:'n',v:T-A,why:`That's what is left over, not ${a}/${b} of it.`},
+    {t:'n',v:T*a,why:`Divide by the bottom first: ${T} ÷ ${b} = ${m}.`},{t:'n',v:A+m,why:`Check: ${m} × ${a} = ${A}.`},{t:'n',v:Math.max(1,A-m),why:`Check: ${m} × ${a} = ${A}.`}]);
+  return {prompt:`What is`,q:`${fr(a,b)}<span>of</span><span>${T}</span>?`,ans,ds:fill(ans,ds,()=>({t:'n',v:A+R(-6,6),why:`${T} ÷ ${b} × ${a} = ${A}.`})),
+    steps:[`Divide by the bottom: ${T} ÷ ${b} = <b>${m}</b>`,`Multiply by the top: ${m} × ${a} = <b>${A}</b>`],vis:groups(a,b,m),hint:`Divide by the bottom, times by the top.`};
+}
+function genMF(L){
+  const w=R(1,3),[n,d]=proper([2,6]),[a,b]=proper([2,6]),T=w*d+n,P=T*a,Q=d*b,ans=norm(P,Q);
+  const ds=shuffle([norm(w*Q+n*a,Q,`Change the mixed number into an improper fraction first. You can't just multiply the fraction part.`),norm(T+a,d+b,`Don't add. Change to an improper fraction, then multiply across.`),
+    norm(T*b,d*a,`That's cross-multiplying. Go straight across: top × top, bottom × bottom.`),norm((w*d)*a,Q,`Remember to add the ${n} when you change ${show({t:'m',w,n,d})} to ${fr(T,d)}.`)]);
+  if(gcd(P,Q)>1)ds.unshift({t:'f',n:P,d:Q,eq:1,why:`Right working! Now simplify ${fr(P,Q)}.`});
+  return {prompt:'Work out:',sub:SIMPLEST,q:`${show({t:'m',w,n,d})}<span>×</span>${fr(a,b)}`,ans,ds:fill(ans,ds,()=>norm(R(1,P+4),Q,`${fr(T,d)} × ${fr(a,b)} = ${fr(P,Q)}.`)),
+    steps:[`Change to an improper fraction: ${show({t:'m',w,n,d})} = ${fr(T,d)}`,`Top × top: ${T} × ${a} = ${P}. Bottom × bottom: ${d} × ${b} = ${Q}.`,`${fr(P,Q)} = ${show(ans)}`],vis:'',hint:`Turn the mixed number into an improper fraction first.`};
+}
+function genX(L){const lv=S.lvl,f=[genFF,genFF,genWF,genOF];if(lv===2)f.push(genMF,genMF);return pick(f)(L)}
+/* ordering and comparing */
+const OD=[[6,8,10,12],[12,15,18,20,24],[24,30,36,40,60]];
+function fracSet(cnt){
+  const lv=S.lvl;let D,c=[];
+  for(let g=0;g<50;g++){D=pick(OD[lv]);c=[];const seen=new Set();
+    for(let d=2;d<=D;d++)if(D%d===0&&(lv>0||d<=12))for(let n=1;n<(lv===2?Math.floor(d*1.6):d);n++)if(gcd(n,d)===1&&!seen.has(n*D/d)){seen.add(n*D/d);c.push({N:n,Dn:d})}
+    if(c.length>=cnt+2)break}
+  let set;for(let g=0;g<40;g++){set=shuffle(c.slice()).slice(0,cnt);if(new Set(set.map(x=>x.Dn)).size>1)break}
+  return {D,set:set.map(x=>Object.assign(norm(x.N,x.Dn),{v2:x.N*D/x.Dn}))};
+}
+const sameD=(x,D)=>`${show(x)} = ${fr(x.v2,D)}`;
+const obars=(arr,D)=>{const mx=Math.max(1,...arr.map(x=>x.v2/D));return arr.map(x=>`<div class="ob"><span>${show(x)}</span><div class="tr"><i style="width:${x.v2/D/mx*100}%"></i></div></div>`).join('')};
+function genOrder(L,dir){
+  const {D,set}=fracSet(4),asc=set.slice().sort((a,b)=>a.v2-b.v2),ans={t:'o',a:dir>0?asc:asc.slice().reverse()},A=ans.a;
+  const word=dir>0?'ascending (smallest first)':'descending (largest first)';
+  const ds=[{t:'o',a:A.slice().reverse(),eq:1,why:dir>0?`That's largest first (descending). <b>Ascending</b> means smallest first, like climbing up stairs.`:`That's smallest first (ascending). <b>Descending</b> means largest first, like going down stairs.`}];
+  const byD=set.slice().sort((a,b)=>a.d-b.d||a.n-b.n);ds.push({t:'o',a:dir>0?byD:byD.reverse(),eq:1,why:`Careful: a bigger denominator means <b>smaller</b> pieces, not a bigger fraction. Change them to the same denominator.`});
+  const byN=set.slice().sort((a,b)=>a.n-b.n||a.d-b.d);ds.push({t:'o',a:dir>0?byN:byN.reverse(),eq:1,why:`Comparing only the top numbers doesn't work when the bottoms are different.`});
+  for(const i of shuffle([0,1,2])){const s=A.slice();[s[i],s[i+1]]=[s[i+1],s[i]];ds.push({t:'o',a:s,eq:1,why:`So close! Check ${show(A[i])} and ${show(A[i+1])}: they are ${fr(A[i].v2,D)} and ${fr(A[i+1].v2,D)}.`})}
+  return {wide:1,prompt:`Put these fractions in ${word} order:`,q:shuffle(set.slice()).map(show).join('<span>,</span>'),ans,ds:fill(ans,ds,()=>({t:'o',a:shuffle(set.slice()),eq:1,why:`Change them all to ${D}ths and compare the tops.`})),
+    steps:[`Change them all to the same denominator, ${D}: ${set.map(x=>sameD(x,D)).join(',  ')}`,`Now compare the tops: ${A.map(x=>x.v2).join(dir>0?' &lt; ':' &gt; ')}`,`So the order is ${A.map(show).join(', ')}`],
+    vis:obars(A,D),hint:`Find a denominator that all the bottoms go into (try ${D}). Then compare the tops.`};
+}
+function genBig(L){
+  const {D,set}=fracSet(5),big=Math.random()<.55,ans=set.reduce((m,x)=>big?(x.v2>m.v2?x:m):(x.v2<m.v2?x:m));
+  const ds=set.filter(x=>x!==ans).map(x=>Object.assign({},x,{why:`${sameD(x,D)}, but ${sameD(ans,D)}, which is ${big?'bigger':'smaller'}.`}));
+  return {prompt:`Which of these fractions is the <b>${big?'largest':'smallest'}</b>?`,q:'',ans,ds,ordered:1,
+    steps:[`Change them all to ${D}ths: ${set.map(x=>sameD(x,D)).join(',  ')}`,`The ${big?'biggest':'smallest'} top number is ${ans.v2}, so the answer is ${show(ans)}`],vis:obars(set.slice().sort((a,b)=>a.v2-b.v2),D),hint:`Change them all to ${D}ths, then look at the top numbers.`};
+}
+function genNeq(L){
+  const [a,b]=proper(L.xd),ks=shuffle([2,3,4,5,6,7,8]).slice(0,5),k=ks[4];
+  const odd=pick([{t:'f',n:a+k,d:b+k,why:`Adding the same number to the top and bottom does <b>not</b> make an equivalent fraction.`},{t:'f',n:a*k+1,d:b*k,why:`${b*k} ÷ ${b} = ${k}, so the top should be ${a} × ${k} = ${a*k}, not ${a*k+1}.`},{t:'f',n:a*k,d:b*k+k,why:`${a*k} ÷ ${a} = ${k}, so the bottom should be ${b} × ${k} = ${b*k}.`}]);
+  const ds=ks.slice(0,4).map(m=>({t:'f',n:a*m,d:b*m,why:`${fr(a*m,b*m)} <b>is</b> equal to ${fr(a,b)}: multiply top and bottom by ${m}.`}));
+  return {prompt:'Which fraction is <b>NOT</b> equivalent to',q:fr(a,b)+'<span>?</span>',ans:odd,ds,
+    steps:[`Equivalent fractions: multiply (or divide) the top and bottom by the <b>same</b> number.`,odd.why],vis:'',hint:`For each one, ask: what was ${b} multiplied by? Was ${a} multiplied by the same number?`};
+}
+function genMiss(L){
+  const [a,b]=proper(L.xd),k=R(2,S.lvl?9:5),top=Math.random()<.6,A=top?a*k:b*k;
+  const ds=top?[{t:'n',v:a+(b*k-b),why:`You added ${b*k-b} to the bottom. Equivalent fractions multiply: ${b} × ${k} = ${b*k}, so ${a} × ${k}.`},{t:'n',v:k,why:`${k} is what you multiply by. Now do ${a} × ${k}.`},{t:'n',v:A+1,why:`Check: ${a} × ${k} = ${A}.`},{t:'n',v:A-1,why:`Check: ${a} × ${k} = ${A}.`},{t:'n',v:a*b,why:`Find what ${b} was multiplied by first (${k}).`}]
+    :[{t:'n',v:b+(a*k-a),why:`You added. Equivalent fractions multiply: ${a} × ${k} = ${a*k}, so ${b} × ${k}.`},{t:'n',v:k,why:`${k} is what you multiply by. Now do ${b} × ${k}.`},{t:'n',v:A+1,why:`Check: ${b} × ${k} = ${A}.`},{t:'n',v:A-b,why:`Check: ${b} × ${k} = ${A}.`},{t:'n',v:a*b,why:`Find what ${a} was multiplied by first (${k}).`}];
+  return {prompt:'What is the missing number?',q:`${fr(a,b)}<span>=</span>${top?fr('?',b*k):fr(a*k,'?')}`,ans:{t:'n',v:A},ds:fill({t:'n',v:A},ds,()=>({t:'n',v:A+R(-5,5),why:`Multiply by ${k}.`})),
+    steps:[top?`${b} × <b>${k}</b> = ${b*k}`:`${a} × <b>${k}</b> = ${a*k}`,top?`So the top is ${a} × ${k} = <b>${A}</b>`:`So the bottom is ${b} × ${k} = <b>${A}</b>`],vis:'',hint:`What has the ${top?'bottom':'top'} been multiplied by? Do the same to the other number.`};
+}
+/* Word problems */
+const PEOPLE=['Aoife','Ciarán','Niamh','Ryan','Orla','Jack','Erin','Conor'];
+const ITEMS=[['sweets','a bag'],['biscuits','a tin'],['stickers','a pack'],['marbles','a jar'],['football cards','a box']];
+const nn=x=>({t:'n',v:x});const money=x=>({t:'n',v:x,u:'£'});
+function genWord(L){
+  const lv=S.lvl,p=Math.random()<.5?N():pick(PEOPLE),[a,b]=proper(L.xd),m=R(...L.xm),T=b*m,A=a*m,[it,box]=pick(ITEMS);
+  const temps=[
+   ()=>({prompt:`There are ${T} ${it} in ${box}. ${p} eats ${fr(a,b)} of them. How many does ${p} eat?`,ans:nn(A),ds:[nn(m),nn(T-A),nn(A+m),nn(T*a)].map((x,i)=>Object.assign(x,{why:[`That's 1/${b}. Now multiply by ${a}.`,`That's how many are <b>left</b>.`,`Check: ${m} × ${a} = ${A}.`,`Divide by ${b} first.`][i]})),steps:[`Find 1/${b}: ${T} ÷ ${b} = ${m}`,`Find ${a}/${b}: ${m} × ${a} = <b>${A}</b>`]}),
+   ()=>({prompt:`There are ${T} ${it} in ${box}. ${p} gives away ${fr(a,b)} of them. How many are <b>left</b>?`,ans:nn(T-A),ds:[nn(A),nn(T-m),nn(m),nn(T-A+m)].map((x,i)=>Object.assign(x,{why:[`That's how many were given away. The question asks how many are left.`,`You took away 1/${b}, but ${a}/${b} were given away.`,`That's 1/${b} of them.`,`Check: ${T} − ${A} = ${T-A}.`][i]})),steps:[`${a}/${b} of ${T}: ${T} ÷ ${b} × ${a} = ${A} given away`,`Left: ${T} − ${A} = <b>${T-A}</b>`,`Or: ${b-a}/${b} are left, and ${b-a}/${b} of ${T} = ${T-A}`]}),
+   ()=>({prompt:`A football costs £${T}. In a sale the price is cut by ${fr(a,b)}. What is the <b>sale price</b>?`,ans:money(T-A),ds:[money(A),money(T-m),money(T+A),money(m)].map((x,i)=>Object.assign(x,{why:[`That's how much you save. Take it away from £${T}.`,`You took off 1/${b}, but the cut is ${a}/${b}.`,`A sale makes it cheaper, so take away.`,`That's 1/${b} of the price.`][i]})),steps:[`The cut: ${fr(a,b)} of £${T} = £${T} ÷ ${b} × ${a} = £${A}`,`Sale price: £${T} − £${A} = <b>£${T-A}</b>`]}),
+   ()=>{const ans=norm(b-a,b);return {prompt:`${p} spent ${fr(a,b)} of their pocket money on a match ticket. What fraction is <b>left</b>?`,ans,ds:[{t:'f',n:a,d:b,why:`That's the fraction spent.`},norm(1,b,`The whole is ${fr(b,b)}. Take away ${fr(a,b)}.`),norm(b,b-a,`Upside down! The bottom stays ${b}.`),norm(b-a,b+a,`The bottom stays ${b}: ${fr(b,b)} − ${fr(a,b)}.`)],steps:[`All the money is ${fr(b,b)}`,`${fr(b,b)} − ${fr(a,b)} = ${fr(b-a,b)}`].concat(gcd(b-a,b)>1?[`Simplify: ${show(ans)}`]:[])}},
+   ()=>{const M=pick([5,10,12,15,20,24,30,36,40,45,48,50]),ans=norm(M,60);return {prompt:`What fraction of an hour is ${M} minutes?`,sub:'Give your answer in its simplest form.',ans,ds:[{t:'f',n:M,d:60,eq:1,why:`Right idea! Now simplify ${fr(M,60)}.`},norm(M,100,`There are 60 minutes in an hour, not 100.`),norm(60-M,60,`That's the part of the hour that is left.`),norm(1,M,`Write it as minutes over 60.`)],steps:[`1 hour = 60 minutes, so it's ${fr(M,60)}`,`Simplify: divide by ${gcd(M,60)} to get ${show(ans)}`]}},
+   ()=>({prompt:`${fr(a,b)} of a number is ${A}. What is the number?`,ans:nn(T),ds:[nn(m),nn(A*a),nn(A+b),nn(Math.round(A*a/b)||A+1)].map((x,i)=>Object.assign(x,{why:[`That's 1/${b} of the number. Now multiply by ${b}.`,`Divide by ${a} first to find 1/${b}.`,`Divide by ${a}, then multiply by ${b}.`,`Work backwards: ${A} ÷ ${a} × ${b}.`][i]})),steps:[`${a}/${b} is ${A}, so 1/${b} is ${A} ÷ ${a} = ${m}`,`The whole number is ${b}/${b}: ${m} × ${b} = <b>${T}</b>`]}),
+   ()=>({prompt:`A ribbon is ${T} cm long. ${p} cuts off ${fr(a,b)} of it. How long is the piece cut off?`,ans:{t:'n',v:A,s:' cm'},ds:[m,T-A,A+m,T*a].map((v,i)=>({t:'n',v,s:' cm',why:[`That's 1/${b}. Multiply by ${a}.`,`That's the piece left over.`,`Check: ${m} × ${a} = ${A}.`,`Divide by ${b} first.`][i]})),steps:[`${T} ÷ ${b} = ${m}`,`${m} × ${a} = <b>${A} cm</b>`]}),
+   ()=>({prompt:`There are ${T} pupils in a class. ${fr(a,b)} of them walk to school. How many do <b>not</b> walk?`,ans:nn(T-A),ds:[nn(A),nn(T-m),nn(m*(b-a)+m),nn(m)].map((x,i)=>Object.assign(x,{why:[`That's how many <b>do</b> walk.`,`You took away 1/${b}, but ${a}/${b} walk.`,`Check: ${T} − ${A} = ${T-A}.`,`That's 1/${b} of the class.`][i]})),steps:[`Walk: ${T} ÷ ${b} × ${a} = ${A}`,`Don't walk: ${T} − ${A} = <b>${T-A}</b>`]})];
+  if(lv>0)temps.push(()=>{const b1=pick([2,3,4]),b2=pick([4,5,6,8].filter(x=>x!==b1)),l=b1*b2/gcd(b1,b2),k=R(1,lv===2?6:3),M=l*k,x=M/b1,y=M/b2;
+    return {prompt:`${p} has £${M}. They spend ${fr(1,b1)} of it on a game and ${fr(1,b2)} of it on sweets. How much money is left?`,ans:money(M-x-y),ds:[money(M-x),money(x+y),money(M-y),money(M-Math.round(M/(b1+b2)))].map((o,i)=>Object.assign(o,{why:[`Remember the sweets as well.`,`That's how much was spent.`,`Remember the game as well.`,`Work out each fraction on its own, then add the two amounts.`][i]})),steps:[`Game: £${M} ÷ ${b1} = £${x}`,`Sweets: £${M} ÷ ${b2} = £${y}`,`Left: £${M} − £${x} − £${y} = <b>£${M-x-y}</b>`]}});
+  const q=pick(temps)();q.ds=fill(q.ans,q.ds,()=>q.ans.t==='n'?Object.assign({},q.ans,{v:q.ans.v+R(-8,8),why:q.steps.join(' ')}):norm(R(1,11),12,'Check the working below.'));
+  q.q='';q.vis=q.vis||'';q.hint=q.hint||`Read it twice. Find 1/${b} first by dividing, then multiply.`;return q;
+}
+
+const GEN={s:genS,m:genM,i:genI,x:genX,oa:L=>genOrder(L,1),od:L=>genOrder(L,-1),big:genBig,neq:genNeq,miss:genMiss,w:genWord};
+
+/* cup path + clock */
+function path(){const c=S.t0?Math.floor((Date.now()-S.t0)/1000):0;
+  $('#path').innerHTML=CUP.map((r,i)=>`<span class="${S.r>i||S.champ?'done':S.r===i&&S.t0?'now':''}">${r.name}</span>`).join('')+`<span class="clock">${S.t0?`Session ${Math.floor(c/60)}:${String(c%60).padStart(2,'0')}`:''}</span>`}
+setInterval(path,1000);
+
+/* screens */
+const card=$('#card');
+function setup(){
+  stopTimer();resetScene();S.t0=0;S.champ=0;S.r=-1;path();upd(true);
+  card.innerHTML=`<h2>Welcome to the Cup</h2>
+  <div class="lab"><label for="nm">Player's name</label></div><input class="name" id="nm" maxlength="20" value="${S.name==='Player'?'':N()}" placeholder="Type your name">
+  <div class="lab">Level</div><div class="chips">${LEVELS.map((v,i)=>`<label class="chip"><input type="radio" name="lvl" value="${i}" ${S.lvl===i?'checked':''}><span>${v}</span></label>`).join('')}</div>
+  <div class="lab">Shot clock</div><div class="chips">${[[0,'No timer'],[45,'45 seconds'],[25,'25 seconds']].map(([v,l])=>`<label class="chip"><input type="radio" name="timer" value="${v}" ${S.timer===v?'checked':''}><span>${l}</span></label>`).join('')}</div>
+  <div class="lab">Start from</div><div class="chips">${CUP.map((r,i)=>`<label class="chip"><input type="radio" name="from" value="${i}" ${S.from===i?'checked':''}><span>${r.name}: ${r.what}</span></label>`).join('')}</div>
+  <div class="row"><button class="go" id="kick">Kick off</button></div>`;
+  card.querySelectorAll('input[type=radio]').forEach(i=>i.onchange=()=>{S[i.name]=+i.value;save()});
+  $('#nm').oninput=e=>{S.name=e.target.value.trim()||'Player';$('#title').textContent=(S.name==='Player'?'Fraction Cup':S.name+"'s Fraction Cup");save()};
+  $('#kick').onclick=()=>{S.t0=Date.now();S.r=S.from;S.total=0;S.kicks=0;S.top=0;S.all=[];beep(880,.08);intro()};
+}
+function intro(){
+  const r=CUP[S.r];Object.assign(S,{i:0,goals:0,streak:0,misses:[],sd:0,done:0,rival:r.kicks===8?R(4,5):R(5,6)});
+  $('#kj').setAttribute('fill',r.kit);resetScene();upd();path();
+  card.innerHTML=`<h2>${r.name}: ${N()} vs ${r.rival}</h2><p class="q">This round: <b>${r.what}</b></p>
+  <p class="q">${r.rival} scored <b>${S.rival}</b> out of ${r.kicks}. ${N()} needs <b>${S.rival+1}</b> to win. ${S.rival} means sudden death!</p>
+  <div class="row"><button class="go" id="nx">Take the first kick</button></div>`;
+  $('#nx').onclick=next;$('#nx').focus({preventScroll:true});
+}
+function next(){
+  const r=CUP[S.r];
+  if(S.done||(!S.sd&&S.i>=r.kicks))return endRound();
+  const t=pick(r.types),q=GEN[t](LV[S.lvl]);
+  q.opts=shuffle([{...q.ans,ok:true},...q.ds]);S.q=q;S.locked=false;resetScene();upd();
+  card.innerHTML=`${S.sd?'<p class="q"><b>Sudden death!</b> Score this one to win.</p>':''}<p class="q${q.q?'':' wp'}">${q.prompt}</p>${q.q?`<div class="big">${q.q}</div>`:''}${q.sub?`<p class="hint" style="margin-top:-6px">${q.sub}</p>`:''}
+  <div class="opts${q.wide?' wide':''}">${q.opts.map((o,i)=>`<button class="opt" data-i="${i}"><span class="L">${'ABCDE'[i]}</span>${show(o)}</button>`).join('')}</div>
+  <div class="hint" id="hintbox"><button class="ghost" id="hintb">Need a hint?</button></div><div id="fbk"></div>`;
+  card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  $('#hintb').onclick=()=>{$('#hintbox').textContent=q.hint};
+  startTimer();
+}
+function answer(i){
+  if(S.locked)return;S.locked=true;stopTimer();
+  const q=S.q,o=i==null?null:q.opts[i],good=!!(o&&o.ok);S.i++;S.kicks++;
+  card.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(q.opts[j].ok)b.classList.add('ok');else if(j===i)b.classList.add('no')});
+  if(good){S.goals++;S.total++;S.streak++;S.top=Math.max(S.top,S.streak);cheer()}else{S.streak=0;groan();const m={q:q.q,a:show(q.ans),p:q.prompt};S.misses.push(m);S.all.push(m)}
+  if(S.sd)S.done=1;
+  shoot(good);upd();
+  const praise=[`${N()} scores!`,'Back of the net!','Top corner!','Unstoppable!','What a strike!','Goal of the season!'];
+  $('#hintbox').remove();
+  const last=S.done||(!S.sd&&S.i>=CUP[S.r].kicks);
+  $('#fbk').innerHTML=`<div class="fb ${good?'':'bad'}"><h3>${good?pick(praise)+(S.streak>2?` ${S.streak} in a row!`:''):(o?'Saved!':'Too slow, saved!')}</h3>
+  ${!good&&o?`<p class="why">${o.why}</p>`:''}<ol>${q.steps.map(s=>`<li>${s}</li>`).join('')}</ol>${q.vis?`<div class="vis">${q.vis}</div>`:''}</div>
+  <div class="row"><button class="go" id="nx">${last?'Final whistle':'Next kick'}</button></div>`;
+  $('#nx').onclick=next;$('#nx').focus({preventScroll:true});
+}
+function missList(ms){return ms.length?`<div class="lab">Practise these again</div><ul class="miss">${ms.map(m=>`<li><span class="bl">${m.p}</span>${m.q} <span>→</span> ${m.a}</li>`).join('')}</ul>`:''}
+function endRound(){
+  stopTimer();resetScene();const r=CUP[S.r];
+  if(!S.sd&&S.goals===S.rival){S.sd=1;card.innerHTML=`<h2>${S.goals}–${S.rival}. It's a draw!</h2><p class="q">Sudden death: one kick. Score it and ${N()} goes through.</p><div class="row"><button class="go" id="nx">Step up</button></div>`;$('#nx').onclick=next;$('#nx').focus({preventScroll:true});upd();return}
+  const win=S.goals>S.rival,lastRound=S.r===CUP.length-1;
+  if(win&&lastRound)return champion();
+  if(win){S.from=Math.min(S.r+1,CUP.length-1);save();cheer()}
+  card.innerHTML=`<h2>${win?`${N()} is through to the ${CUP[S.r+1].name}!`:`${r.rival} win this time`}</h2>
+  <div class="res">${S.goals}–${S.rival}</div><p class="hint">Longest streak so far: ${S.top} · Session goals: ${S.total} from ${S.kicks}</p>${missList(S.misses)}
+  <div class="row">${win?`<button class="go" id="nx">Half-time stretch</button><button class="ghost" id="skip">Skip to next round</button>`:`<button class="go" id="nx">Replay the ${r.name}</button><button class="ghost" id="skip">Move on anyway</button>`}</div>`;
+  $('#nx').onclick=win?brk:intro;$('#skip').onclick=()=>{S.r++;intro()};$('#nx').focus({preventScroll:true});
+}
+let bt=null;
+function brk(){
+  let left=45;S.r++;path();
+  card.innerHTML=`<h2>Half-time stretch</h2><p class="task">${pick(BREAKS)}</p><div class="count" id="ct">45</div>
+  <div class="row"><button class="go" id="nx">Ready for the ${CUP[S.r].name}</button></div>`;
+  clearInterval(bt);bt=setInterval(()=>{left--;const c=$('#ct');if(!c){clearInterval(bt);return}c.textContent=left;if(left<=0){clearInterval(bt);c.textContent='Go!';beep(880,.2)}},1000);
+  $('#nx').onclick=()=>{clearInterval(bt);intro()};$('#nx').focus({preventScroll:true});
+}
+function champion(){
+  S.champ=1;S.from=0;save();path();cheer();setTimeout(cheer,450);setTimeout(cheer,900);
+  const c=Math.floor((Date.now()-S.t0)/60000);
+  card.innerHTML=`<svg class="trophy" viewBox="0 0 200 200" aria-hidden="true"><path d="M55 30h90v40a45 45 0 0 1-90 0z" fill="var(--gold)"/><path d="M60 34h20v40a30 30 0 0 1-12 24C62 90 60 80 60 70z" fill="#fff" fill-opacity=".35"/><path d="M55 42H32a24 24 0 0 0 28 34M145 42h23a24 24 0 0 1-28 34" fill="none" stroke="var(--gold)" stroke-width="10"/><rect x="90" y="112" width="20" height="30" fill="#c99400"/><rect x="62" y="142" width="76" height="16" rx="4" fill="#c99400"/><rect x="50" y="158" width="100" height="24" rx="6" fill="#5b3a10"/><text x="100" y="175" text-anchor="middle" font-family="Bungee" font-size="11" fill="var(--gold)">CHAMPION</text></svg>
+  <h2>${N()} wins the Fraction Cup!</h2><div class="res">${S.total}/${S.kicks}</div>
+  <p class="q">Goals across the whole cup · Longest streak ${S.top} · ${c} minutes played</p>${missList(S.all)}
+  <div class="row"><button class="go" id="again">Play the cup again</button></div>`;
+  $('#again').onclick=setup;$('#again').focus({preventScroll:true});
+}
+function upd(blank){const r=CUP[S.r];
+  $('#lS').textContent=blank||!r?'Score':`${S.name} – ${r.rival}`;
+  $('#sG').textContent=blank||!r?'0–0':`${S.goals}–${S.rival}`;
+  $('#sK').textContent=blank||!r?'0/8':S.sd?'SD':`${S.i}/${r.kicks}`;
+  $('#sS').textContent=blank?0:S.streak}
+
+/* shot clock */
+let tm=null,left=0;
+function startTimer(){if(!S.timer){$('#sT').textContent='–';$('#tb').style.width='100%';return}left=S.timer;tick();tm=setInterval(()=>{left--;tick();if(left<=5&&left>0)beep(440,.05);if(left<=0)answer(null)},1000)}
+function tick(){$('#sT').textContent=left+'s';$('#tb').style.width=left/S.timer*100+'%'}
+function stopTimer(){clearInterval(tm);tm=null}
+
+/* animation */
+function resetScene(){const b=$('#ball'),k=$('#keeper');b.style.transition=k.style.transition='none';b.style.transform=k.style.transform='';$('#msg').classList.remove('on');b.getBoundingClientRect();b.style.transition=k.style.transition=''}
+function shoot(good){
+  const c=pick([[-110,-160],[110,-160],[-115,-85],[115,-85]]),b=$('#ball'),k=$('#keeper'),m=$('#msg');
+  if(good){b.style.transform=`translate(${c[0]}px,${c[1]}px) scale(.7)`;k.style.transform=`translate(${c[0]>0?-60:60}px,8px) rotate(${c[0]>0?-70:70}deg)`;m.textContent='GOAL!'}
+  else{b.style.transform='translate(0px,-120px) scale(.75)';k.style.transform='translateY(-6px)';m.textContent='SAVED!'}
+  setTimeout(()=>m.classList.add('on'),350);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  const n='abcde'.indexOf(e.key.toLowerCase()),d='12345'.indexOf(e.key),i=n>=0?n:d;
+  if(i>=0&&S.q&&!S.locked&&card.querySelector('.opt')){answer(i);return}
+  if(e.key==='Enter'){const b=$('#nx')||$('#again');if(b&&document.activeElement!==b){e.preventDefault();b.click()}}
+});
+$('#title').textContent=((S.name||'Player')==='Player'?'Fraction Cup':S.name+"'s Fraction Cup");
+setup();
+}
+</script>
+<script src="../../assets/results.js" defer></script>
+</body>
+</html>
