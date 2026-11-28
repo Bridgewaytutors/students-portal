@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neil's Fraction Match</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: matchday excitement for a lively Year 7 boy; short bursts, movement breaks, instant feedback
+   IDEA: a 26-kick penalty match in two halves against a rival team's score
+   PICTURE: the goalmouth with keeper and ball, and a cup path strip showing which half of the match he is in
+   COLOUR and TYPE: pitch green fields, chalk white, kit orange accent, gold for the trophy; Bungee + Rubik
+   LAYOUT: cup path, scoreboard, goal scene, one question card with five SEAG-style A to E answers */
+:root{color-scheme:light dark;
+--bg:light-dark(#e9f2e4,#0c1a0f);--ink:light-dark(#0f230f,#e8f3e4);--card:light-dark(#ffffff,#14281a);
+--line:light-dark(#cbdcc4,#2b4631);--soft:light-dark(#f3f8f0,#1a3220);--mut:light-dark(#4b6450,#a6bfa9);
+--p1:light-dark(#2f8c3f,#1b5a27);--p2:light-dark(#37a049,#21682f);--board:#0f3b1c;--gold:#f2b705;
+--acc:#ff5a1f;--acc2:light-dark(#c73d0b,#ff8a5c);--good:light-dark(#178a3e,#4fd27a);--bad:light-dark(#c62828,#ff7070)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Rubik,system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:860px;margin:0 auto;padding:12px max(3vw,12px) 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+h1{font:400 clamp(22px,4.4vw,34px)/1.05 Bungee,Rubik,sans-serif;margin:0;text-wrap:balance}
+.sub{color:var(--mut);font-size:14px;margin:2px 0 0}
+.icon{min-height:44px;padding:0 14px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:500 14px Rubik,sans-serif;cursor:pointer}
+.path{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.path span{padding:6px 10px;border-radius:999px;font-size:13px;font-weight:500;background:var(--soft);border:2px solid var(--line);color:var(--mut);white-space:nowrap}
+.path span.done{background:var(--good);border-color:var(--good);color:#fff}
+.path span.now{background:var(--acc);border-color:var(--acc);color:#fff}
+.path .clock{margin-left:auto;background:none;border:0;color:var(--ink);font-weight:700}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--board);color:#fff;border-radius:16px 16px 0 0;overflow:hidden}
+.board div{padding:8px 6px;text-align:center;border-right:1px solid #ffffff22}
+.board div:last-child{border:0}
+.board small{display:block;font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.board b{font:400 clamp(18px,4vw,26px)/1.1 Bungee,sans-serif;white-space:nowrap}
+.tbar{height:6px;background:#ffffff22}.tbar i{display:block;height:100%;width:100%;background:var(--acc);transition:width 1s linear}
+.scene{display:block;width:100%;height:auto;background:var(--p1);border-radius:0 0 16px 16px}
+#ball{transition:transform .6s cubic-bezier(.2,.75,.3,1)}
+#keeper{transform-box:fill-box;transform-origin:50% 80%;transition:transform .5s cubic-bezier(.3,.8,.3,1)}
+#msg{font:400 50px Bungee,sans-serif;opacity:0;transition:opacity .2s,transform .35s;transform-box:fill-box;transform-origin:center;transform:scale(.6)}
+#msg.on{opacity:1;transform:scale(1)}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:clamp(16px,3vw,26px);margin-top:14px}
+.q{font-size:clamp(18px,3.4vw,22px);font-weight:500;text-align:center;margin:0 0 6px;text-wrap:balance}
+.big{font-size:clamp(38px,8.5vw,56px);font-weight:700;text-align:center;margin:4px 0 14px;line-height:1;display:flex;justify-content:center;align-items:center;gap:.25em;flex-wrap:wrap}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;font-weight:700}
+.fr b:first-child{border-bottom:.09em solid currentColor;padding:0 .14em}
+.mx{display:inline-flex;align-items:center;gap:.08em;white-space:nowrap;font-weight:700}
+.opts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.opts.wide{grid-template-columns:minmax(0,1fr)}.opts.wide .opt{min-height:64px;flex-direction:row;justify-content:flex-start;gap:16px;padding:6px 16px;font-size:22px}
+.ol{display:inline-flex;align-items:center;gap:.3em;flex-wrap:wrap}.ol i{font-style:normal;opacity:.6}
+.q.wp{text-align:left;font-size:clamp(19px,3.6vw,23px);line-height:1.5;margin-bottom:14px}.q.wp .fr{font-size:1.05em;margin:0 .1em}
+.key{padding-left:24px;display:grid;gap:10px}.key li{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}.key b{white-space:nowrap}.miss li b{font-weight:700}
+.ob{display:grid;grid-template-columns:4.5em minmax(0,1fr);align-items:center;gap:10px;font-size:18px}.tr{height:18px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;background:var(--card)}.tr i{display:block;height:100%;background:var(--acc)}
+.opt{min-height:96px;border-radius:14px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font:700 24px Rubik,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .12s,border-color .12s}
+.opt:hover:not(:disabled){border-color:var(--acc);transform:translateY(-2px)}
+.opt .L{font:400 13px Bungee,sans-serif;color:var(--acc2)}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 18%,var(--card))}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--card))}
+.opt:disabled{cursor:default}
+button:focus-visible,.chip:focus-within,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.go{min-height:52px;padding:0 24px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:400 17px Bungee,sans-serif;cursor:pointer;box-shadow:0 4px 0 #b53a0c}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 #b53a0c}
+.ghost{min-height:52px;padding:0 18px;border-radius:14px;border:2px solid var(--line);background:transparent;color:var(--ink);font:500 16px Rubik,sans-serif;cursor:pointer}
+.fb{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--soft);border-left:6px solid var(--good)}
+.fb.bad{border-color:var(--bad)}
+.fb h3{margin:0 0 6px;font:400 20px Bungee,sans-serif}
+.fb ol{margin:6px 0 0;padding-left:22px}.fb li{margin:4px 0}
+.why{font-weight:500}
+.vis{margin-top:10px;display:grid;gap:6px}
+.bar{display:flex;height:22px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;background:var(--card)}
+.bar i{flex:1;border-right:1px solid var(--ink)}.bar i:last-child{border:0}.bar i.s{background:var(--acc)}
+.area{display:grid;gap:2px;width:min(100%,280px);padding:2px;background:var(--ink);border-radius:4px}
+.area i{aspect-ratio:1;background:var(--card)}.area i.l{background:color-mix(in srgb,var(--acc) 35%,var(--card))}.area i.d{background:var(--acc)}
+.grp{display:flex;flex-wrap:wrap;gap:6px}.grp span{min-width:44px;padding:6px 8px;text-align:center;border:2px solid var(--ink);border-radius:8px;font-weight:700}.grp span.s{background:var(--acc);color:#fff;border-color:var(--acc)}
+.bl{font-size:13px;color:var(--mut)}
+.hint{margin-top:12px;text-align:center;color:var(--mut);font-size:15px}
+h2{font:400 clamp(22px,4vw,30px)/1.1 Bungee,sans-serif;margin:0 0 12px;text-align:center;text-wrap:balance}
+.lab{font-weight:700;margin:16px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0}
+.chip span{display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--soft);cursor:pointer;font-weight:500}
+.chip input:checked+span{background:var(--acc);border-color:var(--acc);color:#fff}
+.name{min-height:48px;width:min(100%,280px);padding:0 14px;border-radius:12px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font:500 18px Rubik,sans-serif}
+.res{text-align:center;font:400 clamp(40px,9vw,60px)/1 Bungee,sans-serif;margin:6px 0}
+.miss{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:8px}
+.miss li{padding:10px 12px;border-radius:12px;background:var(--soft);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:18px}
+.task{font:700 clamp(22px,4.5vw,30px)/1.25 Rubik,sans-serif;text-align:center;margin:8px 0;text-wrap:balance}
+.count{text-align:center;font:400 54px/1 Bungee,sans-serif;color:var(--acc2)}
+.trophy{display:block;width:min(60%,200px);margin:0 auto 6px}
+.note{font-size:13px;color:var(--mut);text-align:center;margin-top:14px}
+@media(max-width:600px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}.opt:last-child{grid-column:1/-1}.opt{min-height:84px}.path .clock{margin-left:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1 id="title">Neil's Fraction Match</h1><p class="sub">Two SEAG-style sets of 26 fraction questions. Pick A to E.</p></div>
+  <button class="icon" id="snd" aria-pressed="true">Sound on</button>
+</header>
+<div class="path" id="path"></div>
+<div class="board" aria-live="polite">
+  <div><small id="lS">Score</small><b id="sG">0–0</b></div>
+  <div><small>Kick</small><b id="sK">0/8</b></div>
+  <div><small>Streak</small><b id="sS">0</b></div>
+  <div><small>Shot clock</small><b id="sT">–</b></div>
+</div>
+<div class="tbar"><i id="tb"></i></div>
+<svg class="scene" viewBox="0 0 600 260" role="img" aria-label="Goal with a goalkeeper and a ball on the penalty spot">
+  <defs>
+    <pattern id="net" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 0L14 14M14 0L0 14" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/></pattern>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#123b20"/><stop offset="1" stop-color="#1d5a2c"/></linearGradient>
+  </defs>
+  <rect width="600" height="62" fill="url(#sky)"/>
+  <g id="crowd"></g><g id="stripes"></g>
+  <path d="M60 255 L130 178 L470 178 L540 255" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>
+  <line x1="0" y1="178" x2="600" y2="178" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>
+  <ellipse cx="300" cy="238" rx="5" ry="2.5" fill="#fff"/>
+  <rect x="150" y="40" width="300" height="138" fill="#0b2a13" fill-opacity=".35"/>
+  <rect x="150" y="40" width="300" height="138" fill="url(#net)"/>
+  <path d="M150 178 V40 H450 V178" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M154 178 V44 H446 V178" fill="none" stroke="#c9d6cc" stroke-width="2"/>
+  <g id="keeper">
+    <ellipse cx="300" cy="176" rx="26" ry="4" fill="#000" fill-opacity=".25"/>
+    <rect x="288" y="146" width="10" height="30" rx="4" fill="#1b1b1b"/><rect x="302" y="146" width="10" height="30" rx="4" fill="#1b1b1b"/>
+    <path id="kj" d="M270 112 L284 100 L316 100 L330 112 L322 120 L316 116 L316 150 L284 150 L284 116 L278 120 Z" fill="#7a3cff"/>
+    <path d="M284 100 L316 100 L316 108 L284 108Z" fill="#fff" fill-opacity=".35"/>
+    <text x="300" y="138" text-anchor="middle" font-family="Bungee" font-size="16" fill="#fff">1</text>
+    <rect x="288" y="76" width="24" height="24" rx="6" fill="#c4ccd4"/><rect x="292" y="84" width="16" height="6" rx="3" fill="#18e0ff"/><line x1="300" y1="76" x2="300" y2="68" stroke="#c4ccd4" stroke-width="3"/><circle cx="300" cy="67" r="3" fill="#ff5a1f"/>
+    <circle cx="266" cy="112" r="7" fill="#ffe14d"/><circle cx="334" cy="112" r="7" fill="#ffe14d"/>
+  </g>
+  <g id="ball">
+    <ellipse cx="300" cy="248" rx="11" ry="3" fill="#000" fill-opacity=".25"/>
+    <circle cx="300" cy="236" r="11" fill="#fff" stroke="#222" stroke-width="1.5"/>
+    <path d="M300 231l4 3-1.5 4.5h-5L296 234z" fill="#222"/>
+  </g>
+  <text id="msg" x="300" y="122" text-anchor="middle" fill="#fff" stroke="#0f3b1c" stroke-width="3" paint-order="stroke">GOAL!</text>
+</svg>
+
+<main class="card" id="card"></main>
+<p class="note">Questions are written in the style of the SEAG transfer test; they are not taken from real past papers. Keys: A–E or 1–5 to answer, Enter to carry on.</p>
+</div>
+<script>
+{
+const SETS=[
+{name:'Set 1',rival:'Robo Rovers',kit:'#7a3cff',target:16,qs:[
+{t:'Write {18/24} in its simplest form.',o:['{9/12}','{3/4}','{6/8}','{2/3}','{4/3}'],a:1,s:['The HCF of 18 and 24 is 6.','18 ÷ 6 = 3 and 24 ÷ 6 = 4, so {18/24} = {3/4}'],w:{0:'{9/12} is equal, but 3 still divides both. Keep going.',2:'{6/8} is equal, but 2 still divides both.',4:'Upside down: the top should be the smaller number.'}},
+{t:'Which fraction is equivalent to {2/5}?',o:['{4/7}','{6/15}','{5/2}','{8/25}','{10/20}'],a:1,s:['Multiply top and bottom by the same number.','{2/5} × 3 on top and bottom = {6/15}'],w:{0:'Adding 2 to top and bottom does not make an equivalent fraction.',3:'The top was ×4 but the bottom was ×5.',4:'{10/20} = {1/2}, not {2/5}.'}},
+{b:'{3/4} = {?/20}',t:'What is the missing number?',o:['12','15','16','19','5'],a:1,s:['4 × 5 = 20, so multiply the top by 5 too.','3 × 5 = 15'],w:{2:'You added 13 to the top. Multiply instead.',3:'Equivalent fractions multiply, not add.',4:'5 is what you multiply by. Now do 3 × 5.'}},
+{t:'Write {2 3/5} as an improper fraction.',o:['{13/5}','{11/5}','{6/5}','{23/5}','{10/5}'],a:0,s:['2 wholes = 2 × 5 = 10 fifths.','10 + 3 = 13, so {13/5}'],w:{1:'Check: 2 × 5 = 10, then add 3.',2:'Multiply the whole number by the bottom, don’t multiply 2 × 3.',3:'You wrote the digits next to each other.',4:'Don’t forget to add the 3.'}},
+{t:'Write {17/4} as a mixed number.',o:['{4 1/4}','{3 1/4}','{4 3/4}','{5 1/4}','{4 2/4}'],a:0,s:['How many 4s in 17? 4 × 4 = 16, so 4 wholes.','17 − 16 = 1 left over: {4 1/4}'],w:{1:'4 goes into 17 four times, not three.',2:'The remainder is 1, not 3.',3:'5 × 4 = 20, which is too many.'}},
+{t:'Which of these fractions is the <b>largest</b>?',o:['{3/5}','{2/3}','{5/8}','{7/12}','{1/2}'],a:1,s:['Compare using 120ths, or think of each as a decimal:','{3/5} = 0.6, {2/3} ≈ 0.67, {5/8} = 0.625, {7/12} ≈ 0.58, {1/2} = 0.5'],w:{2:'{5/8} = 0.625, which is less than {2/3} ≈ 0.67.',0:'{3/5} = 0.6, which is less than {2/3}.'}},
+{wide:1,t:'Put these in <b>ascending</b> order (smallest first): {1/2}, {3/8}, {3/4}, {5/8}',o:['{3/8}, {1/2}, {5/8}, {3/4}','{3/4}, {5/8}, {1/2}, {3/8}','{1/2}, {3/4}, {3/8}, {5/8}','{3/8}, {5/8}, {1/2}, {3/4}','{1/2}, {3/8}, {5/8}, {3/4}'],a:0,s:['Change them all to eighths: {4/8}, {3/8}, {6/8}, {5/8}','Order the tops: 3, 4, 5, 6'],w:{1:'That is descending (largest first).',2:'A bigger denominator does not mean a bigger fraction.',3:'Check: {1/2} = {4/8}, which is smaller than {5/8}.'}},
+{wide:1,t:'Put these in <b>descending</b> order (largest first): {2/3}, {5/6}, {1/2}, {7/12}',o:['{1/2}, {7/12}, {2/3}, {5/6}','{5/6}, {2/3}, {7/12}, {1/2}','{7/12}, {5/6}, {2/3}, {1/2}','{5/6}, {7/12}, {2/3}, {1/2}','{2/3}, {5/6}, {7/12}, {1/2}'],a:1,s:['Change to twelfths: {8/12}, {10/12}, {6/12}, {7/12}','Largest first: 10, 8, 7, 6'],w:{0:'That is ascending (smallest first).',3:'{2/3} = {8/12}, which is bigger than {7/12}.'}},
+{t:'What is {3/8} of 40?',o:['5','15','25','120','12'],a:1,s:['Divide by the bottom: 40 ÷ 8 = 5','Multiply by the top: 5 × 3 = 15'],w:{0:'That is {1/8}. Now multiply by 3.',2:'That is what is left over.',3:'Divide by 8 first.'}},
+{t:'There are 28 pupils in a class. {3/7} of them are girls. How many are boys?',o:['12','16','4','21','9'],a:1,s:['Girls: 28 ÷ 7 × 3 = 12','Boys: 28 − 12 = 16'],w:{0:'That is the number of girls.',2:'That is {1/7} of the class.',3:'Check: 28 ÷ 7 = 4, not 7.'}},
+{t:'What fraction of an hour is 15 minutes?',o:['{1/15}','{15/100}','{1/4}','{1/3}','{3/4}'],a:2,s:['An hour is 60 minutes: {15/60}','Simplify: {15/60} = {1/4}'],w:{1:'There are 60 minutes in an hour, not 100.',3:'{1/3} of an hour is 20 minutes.',4:'That is the part of the hour left.'}},
+{t:'{N} had £36. He spent {2/9} of it on a book. How much did the book cost?',o:['£4','£8','£18','£28','£12'],a:1,s:['£36 ÷ 9 = £4','£4 × 2 = £8'],w:{0:'That is {1/9}. Multiply by 2.',3:'That is how much he has left.'}},
+{b:'{2/3} × {3/5}',t:'Work out. Give your answer in its simplest form.',o:['{6/15}','{2/5}','{5/8}','{10/9}','{9/10}'],a:1,s:['Top × top: 2 × 3 = 6. Bottom × bottom: 3 × 5 = 15.','{6/15} simplifies to {2/5}'],w:{0:'Right working, but it can be simplified.',2:'Don’t add. Multiply straight across.',3:'That is cross-multiplying.'}},
+{b:'4 × {2/7}',t:'Work out. Give your answer as a mixed number.',o:['{8/28}','{1 1/7}','{6/7}','{2/28}','{4 2/7}'],a:1,s:['Multiply the top only: 4 × 2 = 8, so {8/7}','{8/7} = {1 1/7}'],w:{0:'Only multiply the top.',2:'Don’t add the 4. Multiply.',4:'That is 4 + {2/7}, not 4 × {2/7}.'}},
+{t:'Which fraction is <b>NOT</b> equivalent to {3/4}?',o:['{6/8}','{9/12}','{12/16}','{15/20}','{5/6}'],a:4,s:['Equivalent fractions multiply top and bottom by the same number.','{5/6} is {3/4} with 2 added to top and bottom, which does not work.']},
+{t:'Which decimal is equal to {3/5}?',o:['0.35','0.53','0.6','0.3','0.06'],a:2,s:['{3/5} = {6/10}','{6/10} = 0.6'],w:{0:'You can’t just write the digits as a decimal.',3:'{3/10} = 0.3, but this is fifths.'}},
+{t:'Which fraction is exactly halfway between {1/4} and {3/4}?',o:['{1/3}','{1/2}','{2/3}','{3/8}','{5/8}'],a:1,s:['{1/4} = {2/4} − {1/4} and {3/4} = {2/4} + {1/4}','So halfway is {2/4} = {1/2}']},
+{t:'{2/5} of a number is 14. What is the number?',o:['28','35','5.6','7','70'],a:1,s:['{2/5} is 14, so {1/5} is 14 ÷ 2 = 7','The whole is {5/5}: 7 × 5 = 35'],w:{3:'That is {1/5}. Multiply by 5.',4:'Divide by 2 first.'}},
+{t:'A pizza is cut into 8 equal slices. {N} eats 3 slices and his sister eats 2. What fraction of the pizza is left?',o:['{5/8}','{3/8}','{2/8}','{1/8}','{3/5}'],a:1,s:['Eaten: 3 + 2 = 5 slices','Left: 8 − 5 = 3 slices, so {3/8}'],w:{0:'That is the fraction eaten.',4:'The whole pizza is 8 slices, so the bottom is 8.'}},
+{t:'Which of these is the <b>smallest</b>?',o:['0.7','{2/3}','{3/4}','0.65','{7/10}'],a:3,s:['Change to decimals: {2/3} ≈ 0.67, {3/4} = 0.75, {7/10} = 0.7','The smallest is 0.65'],w:{1:'{2/3} ≈ 0.667, a little more than 0.65.'}},
+{b:'{1 1/2} × 4',t:'Work out.',o:['{4 1/2}','6','5','8','{5 1/2}'],a:1,s:['{1 1/2} = {3/2}','{3/2} × 4 = {12/2} = 6','Or: 1 × 4 = 4 and {1/2} × 4 = 2, so 6'],w:{0:'Multiply the {1/2} by 4 too.',3:'That is 2 × 4.'}},
+{t:'A bottle holds 750 ml of juice. {2/5} is poured out. How much is <b>left</b>?',o:['300 ml','450 ml','150 ml','600 ml','375 ml'],a:1,s:['Poured out: 750 ÷ 5 × 2 = 300 ml','Left: 750 − 300 = 450 ml'],w:{0:'That is the amount poured out.',2:'That is {1/5}.',4:'That is half.'}},
+{t:'What fraction of 1 kg is 250 g?',o:['{1/4}','{1/25}','{2/5}','{1/2}','{1/250}'],a:0,s:['1 kg = 1000 g, so {250/1000}','Simplify: {250/1000} = {1/4}'],w:{1:'Use grams: 1 kg is 1000 g.',4:'Write it as 250 out of 1000 g.'}},
+{t:'What is {1/3} of {1/2}?',o:['{1/6}','{2/3}','{1/5}','{2/6}','{3/2}'],a:0,s:['“Of” means multiply: {1/3} × {1/2}','1 × 1 = 1 and 3 × 2 = 6, so {1/6}'],w:{2:'Don’t add the bottoms. Multiply.',3:'Multiply the tops too: 1 × 1 = 1.'}},
+{t:'A bag has 30 sweets. {1/3} are red and {2/5} are green. The rest are yellow. How many are yellow?',o:['8','10','12','18','20'],a:0,s:['Red: 30 ÷ 3 = 10. Green: 30 ÷ 5 × 2 = 12','Yellow: 30 − 10 − 12 = 8'],w:{1:'That is the red sweets.',2:'That is the green sweets.',3:'Take away the red sweets too.'}},
+{t:'{N} runs {3/4} of a 2 km track. How many metres does he run?',o:['750 m','1500 m','1250 m','1000 m','500 m'],a:1,s:['2 km = 2000 m','2000 ÷ 4 × 3 = 1500 m'],w:{0:'That is {3/4} of 1 km. The track is 2 km.',4:'That is the part he did not run.'}}]},
+{name:'Set 2',rival:'Fraction Galaxy',kit:'#111111',target:17,qs:[
+{t:'Write {35/42} in its simplest form.',o:['{5/6}','{7/8}','{5/7}','{6/5}','{10/12}'],a:0,s:['The HCF of 35 and 42 is 7.','35 ÷ 7 = 5 and 42 ÷ 7 = 6, so {5/6}'],w:{4:'{10/12} is equal, but 2 still divides both.',3:'Upside down.'}},
+{t:'Which fraction is equivalent to {3/7}?',o:['{6/10}','{9/21}','{7/3}','{3/14}','{12/24}'],a:1,s:['Multiply top and bottom by 3: {9/21}'],w:{0:'Adding 3 to top and bottom does not work.',3:'Only the bottom was multiplied.',4:'{12/24} = {1/2}.'}},
+{b:'{5/6} = {25/?}',t:'What is the missing number?',o:['30','26','36','11','5'],a:0,s:['5 × 5 = 25, so multiply the bottom by 5 too.','6 × 5 = 30'],w:{1:'Multiply, don’t add.',4:'5 is what you multiply by.'}},
+{t:'Write {3 4/7} as an improper fraction.',o:['{25/7}','{19/7}','{17/7}','{7/7}','{34/7}'],a:0,s:['3 wholes = 3 × 7 = 21 sevenths','21 + 4 = 25, so {25/7}'],w:{1:'Multiply 3 by the bottom (7), not by the top.',2:'Add the 4, don’t take it away.',3:'Multiply the whole number by 7 first.',4:'You wrote the digits side by side.'}},
+{t:'Write {23/5} as a mixed number.',o:['{4 3/5}','{3 4/5}','{4 2/5}','{5 3/5}','{4 3/23}'],a:0,s:['5 × 4 = 20, so 4 wholes','23 − 20 = 3 left: {4 3/5}'],w:{1:'5 goes into 23 four times.',2:'The remainder is 3.',4:'Keep the bottom as 5.'}},
+{t:'Which of these fractions is the <b>smallest</b>?',o:['{4/9}','{2/5}','{3/8}','{1/2}','{5/12}'],a:2,s:['As decimals: {4/9} ≈ 0.44, {2/5} = 0.4, {3/8} = 0.375, {1/2} = 0.5, {5/12} ≈ 0.42','The smallest is {3/8}'],w:{1:'{2/5} = 0.4, a little more than 0.375.'}},
+{wide:1,t:'Put these in <b>ascending</b> order (smallest first): {7/10}, {1/2}, {3/5}, {3/4}',o:['{1/2}, {3/5}, {7/10}, {3/4}','{3/4}, {7/10}, {3/5}, {1/2}','{1/2}, {3/4}, {3/5}, {7/10}','{3/5}, {1/2}, {3/4}, {7/10}','{1/2}, {7/10}, {3/5}, {3/4}'],a:0,s:['Change to twentieths: {14/20}, {10/20}, {12/20}, {15/20}','Smallest first: 10, 12, 14, 15'],w:{1:'That is descending.',4:'{3/5} = {12/20}, which is smaller than {14/20}.'}},
+{wide:1,t:'Put these in <b>descending</b> order (largest first): {5/8}, {3/4}, {1/2}, {7/8}',o:['{1/2}, {5/8}, {3/4}, {7/8}','{7/8}, {3/4}, {5/8}, {1/2}','{7/8}, {5/8}, {3/4}, {1/2}','{3/4}, {7/8}, {5/8}, {1/2}','{5/8}, {7/8}, {3/4}, {1/2}'],a:1,s:['Change to eighths: {5/8}, {6/8}, {4/8}, {7/8}','Largest first: 7, 6, 5, 4'],w:{0:'That is ascending.',2:'{3/4} = {6/8}, bigger than {5/8}.'}},
+{t:'What is {5/6} of 42?',o:['7','35','30','37','252'],a:1,s:['42 ÷ 6 = 7','7 × 5 = 35'],w:{0:'That is {1/6}. Multiply by 5.',4:'Divide by 6 first.'}},
+{t:'45 pupils go on a school trip. {2/9} of them bring a packed lunch. How many do <b>not</b> bring a packed lunch?',o:['10','35','40','5','25'],a:1,s:['Packed lunch: 45 ÷ 9 × 2 = 10','Not: 45 − 10 = 35'],w:{0:'That is how many <b>do</b> bring one.',2:'You took away {1/9}, but it is {2/9}.'}},
+{t:'What fraction of an hour is 40 minutes? Give your answer in its simplest form.',o:['{2/5}','{4/6}','{2/3}','{1/3}','{40/100}'],a:2,s:['{40/60}','Divide by 20: {2/3}'],w:{1:'Equal, but not the simplest form.',4:'There are 60 minutes in an hour, not 100.',3:'{1/3} of an hour is 20 minutes.'}},
+{t:'A jacket costs £60. In a sale the price is cut by {1/4}. What is the sale price?',o:['£15','£45','£56','£40','£50'],a:1,s:['The cut: £60 ÷ 4 = £15','Sale price: £60 − £15 = £45'],w:{0:'That is the saving.',2:'Find {1/4} of £60 first.'}},
+{b:'{3/4} × {2/9}',t:'Work out. Give your answer in its simplest form.',o:['{6/36}','{1/6}','{5/13}','{1/3}','{27/8}'],a:1,s:['3 × 2 = 6 and 4 × 9 = 36: {6/36}','Simplify: {6/36} = {1/6}'],w:{0:'Right working, now simplify.',2:'Don’t add. Multiply.',4:'That is cross-multiplying.'}},
+{b:'5 × {3/8}',t:'Work out. Give your answer as a mixed number.',o:['{15/40}','{1 7/8}','{2 1/8}','{1 5/8}','{3/40}'],a:1,s:['5 × 3 = 15, so {15/8}','{15/8} = {1 7/8}'],w:{0:'Only multiply the top.',3:'Check: 15 − 8 = 7.'}},
+{t:'Which fraction is <b>NOT</b> equivalent to {2/3}?',o:['{4/6}','{10/15}','{6/8}','{14/21}','{8/12}'],a:2,s:['{6/8} = {3/4}, not {2/3}','The others are {2/3} multiplied by 2, 5, 7 and 4 on top and bottom.']},
+{t:'Which fraction is equal to 0.75?',o:['{7/5}','{3/4}','{7/50}','{75/10}','{1/75}'],a:1,s:['0.75 = {75/100}','Simplify: {75/100} = {3/4}'],w:{3:'{75/10} = 7.5.'}},
+{t:'Which fraction is between {1/3} and {1/2}?',o:['{1/4}','{2/5}','{3/5}','{1/6}','{2/3}'],a:1,s:['{1/3} ≈ 0.33 and {1/2} = 0.5','{2/5} = 0.4, which is between them']},
+{t:'{3/4} of a number is 27. What is the number?',o:['36','9','81','108','30'],a:0,s:['{1/4} is 27 ÷ 3 = 9','The whole: 9 × 4 = 36'],w:{1:'That is {1/4}. Multiply by 4.',2:'Divide by 3 first.'}},
+{t:'A cake is cut into 12 equal pieces. {N} eats {1/4} of the cake and his dad eats {1/3}. How many pieces are left?',o:['5','7','3','4','10'],a:0,s:['{N}: 12 ÷ 4 = 3 pieces. Dad: 12 ÷ 3 = 4 pieces','Left: 12 − 3 − 4 = 5'],w:{1:'That is how many were eaten.'}},
+{t:'Which of these is the <b>largest</b>?',o:['0.45','{1/2}','{2/5}','0.6','{11/20}'],a:3,s:['As decimals: {1/2} = 0.5, {2/5} = 0.4, {11/20} = 0.55','The largest is 0.6']},
+{b:'{2 1/3} × 3',t:'Work out.',o:['{6 1/3}','7','6','{2 1/9}','8'],a:1,s:['{2 1/3} = {7/3}','{7/3} × 3 = {21/3} = 7'],w:{0:'Multiply the {1/3} by 3 too.',2:'Don’t forget the {1/3} × 3 = 1.'}},
+{t:'A rope is 3 m long. {N} cuts off {5/12} of it. How long is the piece that is <b>left</b>?',o:['125 cm','175 cm','25 cm','250 cm','275 cm'],a:1,s:['3 m = 300 cm. Cut off: 300 ÷ 12 × 5 = 125 cm','Left: 300 − 125 = 175 cm'],w:{0:'That is the piece cut off.',2:'That is {1/12}.'}},
+{t:'What fraction of a day is 8 hours?',o:['{1/8}','{8/100}','{1/3}','{1/4}','{2/3}'],a:2,s:['A day has 24 hours: {8/24}','Simplify: {1/3}'],w:{1:'A day has 24 hours.',3:'{1/4} of a day is 6 hours.'}},
+{t:'What is {2/3} of {3/4}?',o:['{1/2}','{5/7}','{8/9}','{1/12}','{9/8}'],a:0,s:['“Of” means multiply: 2 × 3 = 6 and 3 × 4 = 12','{6/12} = {1/2}'],w:{1:'Don’t add. Multiply.',2:'That is cross-multiplying.'}},
+{t:'{N} has 40 football cards. He gives {1/4} to Ryan and {3/10} to Orla. How many cards does he have left?',o:['18','22','28','12','30'],a:0,s:['Ryan: 40 ÷ 4 = 10. Orla: 40 ÷ 10 × 3 = 12','Left: 40 − 10 − 12 = 18'],w:{1:'That is how many he gave away.',4:'Take away Orla’s cards too.'}},
+{t:'There are 32 pupils in a class. {5/8} of them like football. Half of those play for the school team. How many play for the team?',o:['10','20','16','12','5'],a:0,s:['Like football: 32 ÷ 8 × 5 = 20','Half of 20 = 10'],w:{1:'That is how many like football. Now halve it.',2:'That is half of the whole class.'}}]}];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const fr=(n,d)=>`<span class="fr"><b>${n}</b><b>${d}</b></span>`;
+let S={name:'Neil',set:0,timer:0},sound=true;
+try{Object.assign(S,JSON.parse(localStorage.getItem('nsets')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('nsets',JSON.stringify({name:S.name,set:S.set,timer:S.timer,best:S.best}))}catch(e){}};
+const N=()=>esc(S.name||'Neil');
+const F=s=>String(s).replace(/\{N\}/g,N()).replace(/\{(\d+) (\d+)\/(\d+)\}/g,(_,w,n,d)=>`<span class="mx">${w}${fr(n,d)}</span>`).replace(/\{([\d?]+)\/([\d?]+)\}/g,(_,n,d)=>fr(n,d));
+const BREAKS=['10 star jumps!','Jog on the spot for 20 seconds','Do your best goal celebration','Touch your toes 10 times','Hold a goalkeeper crouch for 15 seconds','Dribble an imaginary ball round your chair 3 times'];
+const HALF=13;
+let ac=null;
+function beep(f,t=.12,type='square',delay=0){if(!sound)return;try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.06,ac.currentTime+delay);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+delay+t);o.connect(g).connect(ac.destination);o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+t)}catch(e){}}
+const cheer=()=>{beep(523,.1,'square',0);beep(659,.1,'square',.1);beep(784,.25,'square',.2)};
+const groan=()=>{beep(220,.25,'sawtooth',0);beep(165,.35,'sawtooth',.2)};
+$('#snd').onclick=e=>{sound=!sound;e.target.textContent=sound?'Sound on':'Sound off';e.target.setAttribute('aria-pressed',sound)};
+$('#crowd').innerHTML=Array.from({length:150},(_,i)=>{const c=['#ff5a1f','#fff','#ffe14d','#7fd3ff','#ff9ad0','#c8f7a6'][i%6];return `<circle cx="${(i%50)*12+6+(Math.floor(i/50)%2)*6}" cy="${14+Math.floor(i/50)*16}" r="4.5" fill="${c}" fill-opacity=".8"/>`}).join('');
+$('#stripes').innerHTML=Array.from({length:6},(_,i)=>`<rect x="${i*100}" y="62" width="100" height="198" fill="var(--${i%2?'p1':'p2'})"/>`).join('');
+
+const card=$('#card');
+const SET=()=>SETS[S.set];
+function path(){const c=S.t0?Math.floor((Date.now()-S.t0)/1000):0,h=S.i==null?-1:S.i<HALF?0:1;
+  $('#path').innerHTML=`<span class="${S.t0?(h>0||S.ft?'done':'now'):''}">First half</span><span class="${S.ft?'done':h>0&&S.t0?'now':''}">Second half</span><span class="${S.ft?'done':''}">Full time</span><span class="clock">${S.t0?`Session ${Math.floor(c/60)}:${String(c%60).padStart(2,'0')}`:''}</span>`}
+setInterval(path,1000);
+function upd(){const st=SET();$('#lS').textContent=`${S.name} – ${st.rival}`;$('#sG').textContent=S.t0?`${S.goals}–${st.target}`:`0–${st.target}`;$('#sK').textContent=`${S.t0?S.i:0}/26`;$('#sS').textContent=S.t0?S.streak:0}
+function setup(){
+  stopTimer();resetScene();S.t0=0;S.ft=0;S.i=null;path();
+  card.innerHTML=`<h2>Choose your match</h2>
+  <div class="lab"><label for="nm">Player's name</label></div><input class="name" id="nm" maxlength="20" value="${N()}">
+  <div class="lab">Question set</div><div class="chips">${SETS.map((s,i)=>`<label class="chip"><input type="radio" name="set" value="${i}" ${S.set===i?'checked':''}><span>${s.name}: vs ${s.rival}</span></label>`).join('')}</div>
+  <div class="lab">Shot clock</div><div class="chips">${[[0,'No timer'],[60,'60 seconds'],[40,'40 seconds']].map(([v,l])=>`<label class="chip"><input type="radio" name="timer" value="${v}" ${S.timer===v?'checked':''}><span>${l}</span></label>`).join('')}</div>
+  <p class="hint" id="bl"></p>
+  <div class="row"><button class="go" id="kick">Kick off</button><button class="ghost" id="key">Answer key</button></div>`;
+  const bl=()=>{const b=(S.best||{})[S.set];$('#bl').textContent=`26 questions, with a stretch break at half-time. ${SET().rival} scored ${SET().target}: beat it!`+(b!=null?` Best so far: ${b}/26.`:'');upd()};bl();
+  card.querySelectorAll('input[type=radio]').forEach(i=>i.onchange=()=>{S[i.name]=+i.value;save();bl()});
+  $('#nm').oninput=e=>{S.name=e.target.value.trim()||'Neil';title();save();upd()};
+  $('#kick').onclick=()=>{Object.assign(S,{t0:Date.now(),ht:0,i:0,goals:0,streak:0,top:0,misses:[]});$('#kj').setAttribute('fill',SET().kit);beep(880,.08);next()};
+  $('#key').onclick=keyView;
+}
+function keyView(){
+  card.innerHTML=`<h2>${SET().name} answer key</h2><ol class="key">${SET().qs.map(q=>`<li><span>${F(q.b?q.b+' · '+q.t:q.t)}</span><b>${'ABCDE'[q.a]}: ${F(q.o[q.a])}</b></li>`).join('')}</ol><div class="row"><button class="go" id="bk">Back</button></div>`;
+  $('#bk').onclick=setup;window.scrollTo({top:card.offsetTop-10});
+}
+function next(){
+  if(S.i===HALF&&!S.ht){S.ht=1;return brk()}
+  if(S.i>=26)return full();
+  const q=SET().qs[S.i];S.q=q;S.locked=false;resetScene();upd();path();
+  card.innerHTML=`<p class="hint" style="margin:0 0 6px">Question ${S.i+1} of 26</p><p class="q${q.b?'':' wp'}">${F(q.t)}</p>${q.b?`<div class="big">${F(q.b)}</div>`:''}
+  <div class="opts${q.wide?' wide':''}">${q.o.map((o,i)=>`<button class="opt" data-i="${i}"><span class="L">${'ABCDE'[i]}</span>${F(o)}</button>`).join('')}</div><div id="fbk"></div>`;
+  card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  startTimer();
+}
+function answer(i){
+  if(S.locked)return;S.locked=true;stopTimer();
+  const q=S.q,good=i===q.a;S.i++;
+  card.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(j===q.a)b.classList.add('ok');else if(j===i)b.classList.add('no')});
+  if(good){S.goals++;S.streak++;S.top=Math.max(S.top,S.streak);cheer()}else{S.streak=0;groan();S.misses.push(q)}
+  shoot(good);upd();
+  const why=!good&&i!=null?((q.w&&q.w[i])||`The answer is ${'ABCDE'[q.a]}. Look at the working below.`):'';
+  $('#fbk').innerHTML=`<div class="fb ${good?'':'bad'}"><h3>${good?pick([`${N()} scores!`,'Back of the net!','Top corner!','What a strike!'])+(S.streak>2?` ${S.streak} in a row!`:''):(i==null?'Too slow, saved!':'Saved!')}</h3>
+  ${why?`<p class="why">${F(why)}</p>`:''}<ol>${q.s.map(s=>`<li>${F(s)}</li>`).join('')}</ol></div>
+  <div class="row"><button class="go" id="nx">${S.i>=26?'Final whistle':S.i===HALF?'Half-time':'Next kick'}</button></div>`;
+  $('#nx').onclick=next;$('#nx').focus({preventScroll:true});
+}
+let bt=null;
+function brk(){
+  stopTimer();resetScene();let left=60;
+  card.innerHTML=`<h2>Half-time: ${S.goals}–${SET().target}</h2><p class="q">${N()} needs ${Math.max(0,SET().target+1-S.goals)} more goals in the second half to win.</p><p class="task">${pick(BREAKS)}</p><div class="count" id="ct">60</div>
+  <div class="row"><button class="go" id="nx">Start the second half</button></div>`;
+  clearInterval(bt);bt=setInterval(()=>{left--;const c=$('#ct');if(!c){clearInterval(bt);return}c.textContent=left;if(left<=0){clearInterval(bt);c.textContent='Go!';beep(880,.2)}},1000);
+  $('#nx').onclick=()=>{clearInterval(bt);next()};$('#nx').focus({preventScroll:true});
+}
+function full(){
+  stopTimer();resetScene();S.ft=1;S.ht=0;path();const st=SET(),win=S.goals>st.target,draw=S.goals===st.target;
+  S.best=S.best||{};const prev=S.best[S.set];if(prev==null||S.goals>prev)S.best[S.set]=S.goals;save();
+  if(win){cheer();setTimeout(cheer,450)}
+  card.innerHTML=`${win?`<svg class="trophy" viewBox="0 0 200 200" aria-hidden="true"><path d="M55 30h90v40a45 45 0 0 1-90 0z" fill="var(--gold)"/><path d="M55 42H32a24 24 0 0 0 28 34M145 42h23a24 24 0 0 1-28 34" fill="none" stroke="var(--gold)" stroke-width="10"/><rect x="90" y="112" width="20" height="30" fill="#c99400"/><rect x="62" y="142" width="76" height="16" rx="4" fill="#c99400"/><rect x="50" y="158" width="100" height="24" rx="6" fill="#5b3a10"/></svg>`:''}
+  <h2>${win?`${N()} beats ${st.rival}!`:draw?`A draw with ${st.rival}!`:`${st.rival} win this time`}</h2><div class="res">${S.goals}/26</div>
+  <p class="hint">Longest streak: ${S.top} · ${Math.round((Date.now()-S.t0)/60000)} minutes${prev!=null&&S.goals>prev?' · New best!':''}</p>
+  ${S.misses.length?`<div class="lab">Practise these again</div><ul class="miss">${S.misses.map(q=>`<li><span>${F(q.b?q.b+' · '+q.t:q.t)}</span><b>→ ${F(q.o[q.a])}</b></li>`).join('')}</ul>`:''}
+  <div class="row"><button class="go" id="again">Play ${SETS[1-S.set].name}</button><button class="ghost" id="re">Replay ${st.name}</button><button class="ghost" id="hm">Menu</button></div>`;
+  $('#again').onclick=()=>{S.set=1-S.set;save();setup()};$('#re').onclick=setup;$('#hm').onclick=setup;
+}
+let tm=null,left=0;
+function startTimer(){if(!S.timer){$('#sT').textContent='–';$('#tb').style.width='100%';return}left=S.timer;tick();tm=setInterval(()=>{left--;tick();if(left<=5&&left>0)beep(440,.05);if(left<=0)answer(null)},1000)}
+function tick(){$('#sT').textContent=left+'s';$('#tb').style.width=left/S.timer*100+'%'}
+function stopTimer(){clearInterval(tm);tm=null;if(!S.timer)$('#sT').textContent='–'}
+function resetScene(){const b=$('#ball'),k=$('#keeper');b.style.transition=k.style.transition='none';b.style.transform=k.style.transform='';$('#msg').classList.remove('on');b.getBoundingClientRect();b.style.transition=k.style.transition=''}
+function shoot(good){
+  const c=pick([[-110,-160],[110,-160],[-115,-85],[115,-85]]),b=$('#ball'),k=$('#keeper'),m=$('#msg');
+  if(good){b.style.transform=`translate(${c[0]}px,${c[1]}px) scale(.7)`;k.style.transform=`translate(${c[0]>0?-60:60}px,8px) rotate(${c[0]>0?-70:70}deg)`;m.textContent='GOAL!'}
+  else{b.style.transform='translate(0px,-120px) scale(.75)';k.style.transform='translateY(-6px)';m.textContent='SAVED!'}
+  setTimeout(()=>m.classList.add('on'),350);
+}
+function title(){$('#title').textContent=`${S.name||'Neil'}'s Fraction Match`}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  const n='abcde'.indexOf(e.key.toLowerCase()),d='12345'.indexOf(e.key),i=n>=0?n:d;
+  if(i>=0&&S.q&&!S.locked&&card.querySelector('.opt')){answer(i);return}
+  if(e.key==='Enter'){const b=$('#nx');if(b&&document.activeElement!==b){e.preventDefault();b.click()}}
+});
+title();setup();
+}
+</script>
+<script src="../../assets/results.js" defer></script>
+</body>
+</html>
