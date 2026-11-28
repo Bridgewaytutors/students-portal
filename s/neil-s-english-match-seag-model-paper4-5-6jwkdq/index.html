@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neil's English Match</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: matchday excitement for a lively Year 7 boy; short bursts, movement breaks, instant feedback
+   IDEA: a 26-kick English penalty match in two halves against a rival team's score
+   PICTURE: the goalmouth with keeper and ball, and a cup path strip showing which half of the match he is in
+   COLOUR and TYPE: pitch green fields, chalk white, kit orange accent, gold for the trophy; Bungee + Rubik
+   LAYOUT: cup path, scoreboard, goal scene, one question card with five SEAG-style A to E answers */
+:root{color-scheme:light dark;
+--bg:light-dark(#e9f2e4,#0c1a0f);--ink:light-dark(#0f230f,#e8f3e4);--card:light-dark(#ffffff,#14281a);
+--line:light-dark(#cbdcc4,#2b4631);--soft:light-dark(#f3f8f0,#1a3220);--mut:light-dark(#4b6450,#a6bfa9);
+--p1:light-dark(#2f8c3f,#1b5a27);--p2:light-dark(#37a049,#21682f);--board:#0f3b1c;--gold:#f2b705;
+--acc:#ff5a1f;--acc2:light-dark(#c73d0b,#ff8a5c);--good:light-dark(#178a3e,#4fd27a);--bad:light-dark(#c62828,#ff7070)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Rubik,system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:860px;margin:0 auto;padding:12px max(3vw,12px) 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+h1{font:400 clamp(22px,4.4vw,34px)/1.05 Bungee,Rubik,sans-serif;margin:0;text-wrap:balance}
+.sub{color:var(--mut);font-size:14px;margin:2px 0 0}
+.icon{min-height:44px;padding:0 14px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:500 14px Rubik,sans-serif;cursor:pointer}
+.path{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.path span{padding:6px 10px;border-radius:999px;font-size:13px;font-weight:500;background:var(--soft);border:2px solid var(--line);color:var(--mut);white-space:nowrap}
+.path span.done{background:var(--good);border-color:var(--good);color:#fff}
+.path span.now{background:var(--acc);border-color:var(--acc);color:#fff}
+.path .clock{margin-left:auto;background:none;border:0;color:var(--ink);font-weight:700}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--board);color:#fff;border-radius:16px 16px 0 0;overflow:hidden}
+.board div{padding:8px 6px;text-align:center;border-right:1px solid #ffffff22}
+.board div:last-child{border:0}
+.board small{display:block;font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.board b{font:400 clamp(18px,4vw,26px)/1.1 Bungee,sans-serif;white-space:nowrap}
+.tbar{height:6px;background:#ffffff22}.tbar i{display:block;height:100%;width:100%;background:var(--acc);transition:width 1s linear}
+.scene{display:block;width:100%;height:auto;background:var(--p1);border-radius:0 0 16px 16px}
+#ball{transition:transform .6s cubic-bezier(.2,.75,.3,1)}
+#keeper{transform-box:fill-box;transform-origin:50% 80%;transition:transform .5s cubic-bezier(.3,.8,.3,1)}
+#msg{font:400 50px Bungee,sans-serif;opacity:0;transition:opacity .2s,transform .35s;transform-box:fill-box;transform-origin:center;transform:scale(.6)}
+#msg.on{opacity:1;transform:scale(1)}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:clamp(16px,3vw,26px);margin-top:14px}
+.q{font-size:clamp(18px,3.4vw,22px);font-weight:500;text-align:center;margin:0 0 6px;text-wrap:balance}
+.big{font-size:clamp(38px,8.5vw,56px);font-weight:700;text-align:center;margin:4px 0 14px;line-height:1;display:flex;justify-content:center;align-items:center;gap:.25em;flex-wrap:wrap}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.05;font-weight:700}
+.fr b:first-child{border-bottom:.09em solid currentColor;padding:0 .14em}
+.mx{display:inline-flex;align-items:center;gap:.08em;white-space:nowrap;font-weight:700}
+.opts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.opts.wide{grid-template-columns:minmax(0,1fr)}.opts.wide .opt{min-height:64px;flex-direction:row;justify-content:flex-start;gap:16px;padding:6px 16px;font-size:22px}
+.ol{display:inline-flex;align-items:center;gap:.3em;flex-wrap:wrap}.ol i{font-style:normal;opacity:.6}
+.q.wp{text-align:left;font-size:clamp(19px,3.6vw,23px);line-height:1.5;margin-bottom:14px}.q.wp .fr{font-size:1.05em;margin:0 .1em}
+.pass{background:var(--soft);border:2px solid var(--line);border-radius:14px;padding:12px 16px;margin:0 0 14px;font-size:17px;line-height:1.65}.pass summary{font-weight:700;cursor:pointer;min-height:32px}.pass p{margin:6px 0 0}.q.wp i{font-style:italic;font-weight:400;display:inline-block;margin-top:6px}
+.opt{font-weight:700}.opts.wide .opt{font-size:19px;text-align:left}.opts:not(.wide) .opt{font-size:20px;padding:6px;word-break:break-word}
+.key{padding-left:24px;display:grid;gap:10px}.key li{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}.key b{white-space:nowrap}.miss li b{font-weight:700}
+.ob{display:grid;grid-template-columns:4.5em minmax(0,1fr);align-items:center;gap:10px;font-size:18px}.tr{height:18px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;background:var(--card)}.tr i{display:block;height:100%;background:var(--acc)}
+.opt{min-height:96px;border-radius:14px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font:700 24px Rubik,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform .12s,border-color .12s}
+.opt:hover:not(:disabled){border-color:var(--acc);transform:translateY(-2px)}
+.opt .L{font:400 13px Bungee,sans-serif;color:var(--acc2)}
+.opt.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 18%,var(--card))}
+.opt.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,var(--card))}
+.opt:disabled{cursor:default}
+button:focus-visible,.chip:focus-within,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
+.go{min-height:52px;padding:0 24px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:400 17px Bungee,sans-serif;cursor:pointer;box-shadow:0 4px 0 #b53a0c}
+.go:active{transform:translateY(3px);box-shadow:0 1px 0 #b53a0c}
+.ghost{min-height:52px;padding:0 18px;border-radius:14px;border:2px solid var(--line);background:transparent;color:var(--ink);font:500 16px Rubik,sans-serif;cursor:pointer}
+.fb{margin-top:16px;padding:14px 16px;border-radius:14px;background:var(--soft);border-left:6px solid var(--good)}
+.fb.bad{border-color:var(--bad)}
+.fb h3{margin:0 0 6px;font:400 20px Bungee,sans-serif}
+.fb ol{margin:6px 0 0;padding-left:22px}.fb li{margin:4px 0}
+.why{font-weight:500}
+.vis{margin-top:10px;display:grid;gap:6px}
+.bar{display:flex;height:22px;border:2px solid var(--ink);border-radius:5px;overflow:hidden;background:var(--card)}
+.bar i{flex:1;border-right:1px solid var(--ink)}.bar i:last-child{border:0}.bar i.s{background:var(--acc)}
+.area{display:grid;gap:2px;width:min(100%,280px);padding:2px;background:var(--ink);border-radius:4px}
+.area i{aspect-ratio:1;background:var(--card)}.area i.l{background:color-mix(in srgb,var(--acc) 35%,var(--card))}.area i.d{background:var(--acc)}
+.grp{display:flex;flex-wrap:wrap;gap:6px}.grp span{min-width:44px;padding:6px 8px;text-align:center;border:2px solid var(--ink);border-radius:8px;font-weight:700}.grp span.s{background:var(--acc);color:#fff;border-color:var(--acc)}
+.bl{font-size:13px;color:var(--mut)}
+.hint{margin-top:12px;text-align:center;color:var(--mut);font-size:15px}
+h2{font:400 clamp(22px,4vw,30px)/1.1 Bungee,sans-serif;margin:0 0 12px;text-align:center;text-wrap:balance}
+.lab{font-weight:700;margin:16px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;inset:0}
+.chip span{display:flex;align-items:center;min-height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--soft);cursor:pointer;font-weight:500}
+.chip input:checked+span{background:var(--acc);border-color:var(--acc);color:#fff}
+.name{min-height:48px;width:min(100%,280px);padding:0 14px;border-radius:12px;border:2px solid var(--line);background:var(--soft);color:var(--ink);font:500 18px Rubik,sans-serif}
+.res{text-align:center;font:400 clamp(40px,9vw,60px)/1 Bungee,sans-serif;margin:6px 0}
+.miss{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:8px}
+.miss li{padding:10px 12px;border-radius:12px;background:var(--soft);display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:18px}
+.task{font:700 clamp(22px,4.5vw,30px)/1.25 Rubik,sans-serif;text-align:center;margin:8px 0;text-wrap:balance}
+.count{text-align:center;font:400 54px/1 Bungee,sans-serif;color:var(--acc2)}
+.trophy{display:block;width:min(60%,200px);margin:0 auto 6px}
+.note{font-size:13px;color:var(--mut);text-align:center;margin-top:14px}
+@media(max-width:600px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}.opt:last-child{grid-column:1/-1}.opt{min-height:84px}.path .clock{margin-left:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1 id="title">Neil's English Match</h1><p class="sub">Two SEAG-style sets of 26 adjective and reading questions. Pick A to E.</p></div>
+  <button class="icon" id="snd" aria-pressed="true">Sound on</button>
+</header>
+<div class="path" id="path"></div>
+<div class="board" aria-live="polite">
+  <div><small id="lS">Score</small><b id="sG">0–0</b></div>
+  <div><small>Kick</small><b id="sK">0/8</b></div>
+  <div><small>Streak</small><b id="sS">0</b></div>
+  <div><small>Shot clock</small><b id="sT">–</b></div>
+</div>
+<div class="tbar"><i id="tb"></i></div>
+<svg class="scene" viewBox="0 0 600 260" role="img" aria-label="Goal with a goalkeeper and a ball on the penalty spot">
+  <defs>
+    <pattern id="net" width="14" height="14" patternUnits="userSpaceOnUse"><path d="M0 0L14 14M14 0L0 14" stroke="#fff" stroke-opacity=".45" stroke-width="1.2"/></pattern>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#123b20"/><stop offset="1" stop-color="#1d5a2c"/></linearGradient>
+  </defs>
+  <rect width="600" height="62" fill="url(#sky)"/>
+  <g id="crowd"></g><g id="stripes"></g>
+  <path d="M60 255 L130 178 L470 178 L540 255" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>
+  <line x1="0" y1="178" x2="600" y2="178" stroke="#fff" stroke-opacity=".8" stroke-width="3"/>
+  <ellipse cx="300" cy="238" rx="5" ry="2.5" fill="#fff"/>
+  <rect x="150" y="40" width="300" height="138" fill="#0b2a13" fill-opacity=".35"/>
+  <rect x="150" y="40" width="300" height="138" fill="url(#net)"/>
+  <path d="M150 178 V40 H450 V178" fill="none" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M154 178 V44 H446 V178" fill="none" stroke="#c9d6cc" stroke-width="2"/>
+  <g id="keeper">
+    <ellipse cx="300" cy="176" rx="26" ry="4" fill="#000" fill-opacity=".25"/>
+    <rect x="288" y="146" width="10" height="30" rx="4" fill="#1b1b1b"/><rect x="302" y="146" width="10" height="30" rx="4" fill="#1b1b1b"/>
+    <path id="kj" d="M270 112 L284 100 L316 100 L330 112 L322 120 L316 116 L316 150 L284 150 L284 116 L278 120 Z" fill="#7a3cff"/>
+    <path d="M284 100 L316 100 L316 108 L284 108Z" fill="#fff" fill-opacity=".35"/>
+    <text x="300" y="138" text-anchor="middle" font-family="Bungee" font-size="16" fill="#fff">1</text>
+    <rect x="288" y="76" width="24" height="24" rx="6" fill="#c4ccd4"/><rect x="292" y="84" width="16" height="6" rx="3" fill="#18e0ff"/><line x1="300" y1="76" x2="300" y2="68" stroke="#c4ccd4" stroke-width="3"/><circle cx="300" cy="67" r="3" fill="#ff5a1f"/>
+    <circle cx="266" cy="112" r="7" fill="#ffe14d"/><circle cx="334" cy="112" r="7" fill="#ffe14d"/>
+  </g>
+  <g id="ball">
+    <ellipse cx="300" cy="248" rx="11" ry="3" fill="#000" fill-opacity=".25"/>
+    <circle cx="300" cy="236" r="11" fill="#fff" stroke="#222" stroke-width="1.5"/>
+    <path d="M300 231l4 3-1.5 4.5h-5L296 234z" fill="#222"/>
+  </g>
+  <text id="msg" x="300" y="122" text-anchor="middle" fill="#fff" stroke="#0f3b1c" stroke-width="3" paint-order="stroke">GOAL!</text>
+</svg>
+
+<main class="card" id="card"></main>
+<p class="note">Questions and passages are written in the style of the SEAG transfer test; they are not taken from real past papers. Keys: A–E or 1–5 to answer, Enter to carry on.</p>
+</div>
+<script>
+{
+const SETS=[
+{name:'Set 1',rival:'Robo Rovers',kit:'#7a3cff',target:16,
+passage:`The old stadium was packed with thousands of excited fans. A cold, grey mist hung over the pitch as the two teams walked out. Ryan, the youngest player in the squad, felt nervous. His legs were heavy and his mouth was dry. Then he heard his grandmother’s cheerful voice above the noise of the crowd. Suddenly he felt braver. When the ball came to him in the final minute, he struck it with his left foot. It flew past the tall goalkeeper and into the top corner. It was the most amazing moment of his life.`,
+qs:[
+{t:'Which word is an <b>adjective</b>?<br><i>The tired dog slept under the table.</i>',o:['dog','slept','tired','under','table'],a:2,s:['An adjective describes a noun.','<i>tired</i> describes the dog.'],w:{0:'<i>dog</i> is a noun (a thing).',1:'<i>slept</i> is a verb (an action).',3:'<i>under</i> is a preposition (where).'}},
+{t:'How many adjectives are in this sentence?<br><i>A tall, friendly teacher gave us a difficult test.</i>',o:['1','2','3','4','5'],a:2,s:['tall, friendly (describe the teacher)','difficult (describes the test)','That is 3 adjectives.'],w:{1:'Don’t forget <i>difficult</i>, which describes the test.',3:'<i>teacher</i> and <i>test</i> are nouns, not adjectives.'}},
+{t:'Choose the best adjective to fill the gap.<br><i>The ______ lion roared at the crowd.</i>',o:['fiercely','roared','ferocious','quickly','loudly'],a:2,s:['We need a word that describes the lion (a noun).','<i>ferocious</i> is an adjective: the ferocious lion.'],w:{0:'<i>fiercely</i> is an adverb. It describes how something is done.',3:'<i>quickly</i> is an adverb.',4:'<i>loudly</i> is an adverb.'}},
+{t:'Which word is an <b>adjective</b>?<br><i>{N} kicked the muddy ball into the net.</i>',o:['kicked','muddy','ball','into','net'],a:1,s:['<i>muddy</i> describes the ball.'],w:{0:'<i>kicked</i> is a verb.',2:'<i>ball</i> is a noun.'}},
+{t:'Choose the correct word.<br><i>The film was so long that I felt ______.</i>',o:['bored','boring','bore','bores','boredom'],a:0,s:['-ed adjectives describe how a person <b>feels</b>.','-ing adjectives describe the thing that <b>causes</b> the feeling.','I felt <b>bored</b> (the film was boring).'],w:{1:'<i>boring</i> describes the film, not how I felt.',4:'<i>boredom</i> is a noun.'}},
+{t:'Choose the correct word.<br><i>The rollercoaster ride was ______!</i>',o:['excited','exciting','excite','excites','excitement'],a:1,s:['The ride <b>causes</b> the feeling, so use -ing.','The ride was <b>exciting</b>. (I was excited.)'],w:{0:'<i>excited</i> is how a person feels. A ride can’t feel excited.',4:'<i>excitement</i> is a noun.'}},
+{wide:1,t:'Which sentence is <b>correct</b>?',o:['I am very interesting in football.','The match was very excited.','{N} was amazed by the goal.','We were tiring after the race.','The news was surprised.'],a:2,s:['People <b>feel</b> -ed: {N} was amazed.','Things <b>cause</b> -ing: the goal was amazing.'],w:{0:'Should be <i>interested</i>: it is how I feel.',1:'Should be <i>exciting</i>: the match causes the feeling.',3:'Should be <i>tired</i>.',4:'Should be <i>surprising</i>.'}},
+{t:'Choose the correct word.<br><i>My little sister was ______ by the loud thunder.</i>',o:['frightening','frightened','fright','frightens','frighten'],a:1,s:['This is how my sister <b>feels</b>, so use -ed.','The thunder was frightening; she was <b>frightened</b>.'],w:{0:'<i>frightening</i> describes the thunder.',2:'<i>fright</i> is a noun.'}},
+{wide:1,t:'Which phrase has the adjectives in the <b>correct order</b>?',o:['a red big ball','a big red ball','a ball big red','a red ball big','big a red ball'],a:1,s:['Order: opinion, size, age, shape, colour, origin, material, purpose.','Size (big) comes before colour (red).'],w:{0:'Size comes before colour.'}},
+{wide:1,t:'Which phrase has the adjectives in the <b>correct order</b>?',o:['an old lovely house','a lovely old house','an old house lovely','a house lovely old','lovely an old house'],a:1,s:['Opinion (lovely) comes first.','Then age (old).'],w:{0:'Opinion adjectives always come first.'}},
+{wide:1,t:'Which phrase has the adjectives in the <b>correct order</b>?',o:['a beautiful long silk scarf','a silk long beautiful scarf','a long beautiful silk scarf','a beautiful silk long scarf','a long silk beautiful scarf'],a:0,s:['Opinion (beautiful) → size (long) → material (silk).'],w:{2:'Opinion (beautiful) should come before size.',3:'Size (long) comes before material (silk).'}},
+{t:'Which type of adjective usually comes <b>first</b> in a list?',o:['colour','size','opinion','material','age'],a:2,s:['Opinion, size, age, shape, colour, origin, material, purpose.','What you <b>think</b> (lovely, horrible) always goes first.']},
+{wide:1,t:'Which phrase has the adjectives in the <b>correct order</b>?',o:['a red shiny new bike','a new shiny red bike','a shiny new red bike','a red new shiny bike','a shiny red new bike'],a:2,s:['Opinion (shiny) → age (new) → colour (red).'],w:{1:'Opinion (shiny) comes before age (new).',4:'Age (new) comes before colour (red).'}},
+{t:'Choose the correct word.<br><i>{N} is ______ than his brother.</i>',o:['tall','taller','tallest','more tall','most tall'],a:1,s:['“than” tells us we are comparing <b>two</b> people: use a comparative.','Short words add -er: tall → <b>taller</b>.'],w:{2:'<i>tallest</i> is for three or more.',3:'Short words add -er instead of using “more”.'}},
+{t:'Choose the correct word.<br><i>This book is ______ than the last one.</i>',o:['interestinger','more interesting','most interesting','interesting','interestingest'],a:1,s:['Long words (3+ syllables) use <b>more</b> for comparatives.','more interesting'],w:{0:'Long words don’t add -er.',2:'<i>most</i> is for superlatives (the best of all).'}},
+{t:'Choose the correct word.<br><i>My cold is ______ today than yesterday.</i>',o:['badder','worse','worst','more bad','baddest'],a:1,s:['<i>bad</i> is irregular: bad → <b>worse</b> → worst.'],w:{0:'<i>badder</i> is not a word.',2:'<i>worst</i> is the superlative.'}},
+{t:'What is the <b>comparative</b> of <i>happy</i>?',o:['happyer','happier','more happier','happiest','happily'],a:1,s:['Words ending in consonant + y: change y to i, then add -er.','happy → <b>happier</b>'],w:{0:'Change the y to i first.',2:'Never use “more” and -er together.',3:'<i>happiest</i> is the superlative.',4:'<i>happily</i> is an adverb.'}},
+{t:'Choose the correct word.<br><i>Mount Everest is the ______ mountain in the world.</i>',o:['high','higher','highest','most high','more higher'],a:2,s:['“the … in the world” compares it with all the others: use a superlative.','high → <b>highest</b>'],w:{1:'<i>higher</i> compares only two things.'}},
+{t:'Choose the correct word.<br><i>That was the ______ goal of the whole season!</i>',o:['good','better','best','goodest','most good'],a:2,s:['<i>good</i> is irregular: good → better → <b>best</b>.'],w:{1:'<i>better</i> compares two things.',3:'<i>goodest</i> is not a word.'}},
+{wide:1,t:'Which sentence is <b>correct</b>?',o:['She is the most fastest runner.','This is the more beautiful garden in town.','He is the youngest of the three brothers.','It was the baddest day ever.','My bag is heavyer than yours.'],a:2,s:['Three brothers → superlative → <b>youngest</b>.'],w:{0:'Never use “most” and -est together: fastest.',1:'Should be <i>most beautiful</i>.',3:'Should be <i>worst</i>.',4:'Should be <i>heavier</i>.'}},
+{t:'What is the <b>superlative</b> of <i>many</i>?',o:['manyest','more','most','mostest','much'],a:2,s:['<i>many</i> is irregular: many → more → <b>most</b>.'],w:{1:'<i>more</i> is the comparative.'}},
+{p:1,t:'How did Ryan feel when the teams walked out?',o:['excited','nervous','bored','angry','sleepy'],a:1,s:['The passage says: “Ryan … felt nervous.”'],w:{0:'The <b>fans</b> were excited, not Ryan.'}},
+{p:1,t:'Which word from the passage is a <b>superlative</b> adjective?',o:['cheerful','youngest','braver','heavy','tall'],a:1,s:['Superlatives end in -est or use “most”.','<i>the youngest player</i>'],w:{2:'<i>braver</i> is a comparative.'}},
+{p:1,t:'In the passage, the word <i>braver</i> is …',o:['a superlative adjective','a comparative adjective','a verb','a noun','an adverb'],a:1,s:['brave → <b>braver</b> → bravest','braver compares how he felt before and after.']},
+{p:1,t:'What made Ryan feel braver?',o:['the cold mist','hearing his grandmother’s voice','the tall goalkeeper','his heavy legs','the excited fans'],a:1,s:['“Then he heard his grandmother’s cheerful voice … Suddenly he felt braver.”']},
+{p:1,t:'In <i>a cold, grey mist</i>, which adjective describes <b>colour</b>?',o:['cold','grey','mist','hung','pitch'],a:1,s:['<i>grey</i> is a colour.','<i>cold</i> describes temperature; <i>mist</i> is a noun.']}]},
+{name:'Set 2',rival:'Grammar Galaxy',kit:'#111111',target:17,
+passage:`Maya opened the creaky wooden door of her grandfather’s shed. Inside it was dark and dusty, and it smelled of old oil. On a long, narrow shelf sat a tiny silver box. Maya picked it up carefully. It was colder than she expected. Inside, wrapped in soft blue cloth, was a shiny medal. Her grandfather smiled proudly when she showed it to him. “That was the happiest day of my life,” he said. “I won the fastest race in the county.”`,
+qs:[
+{t:'Which word is an <b>adjective</b>?<br><i>The children played in the sunny garden.</i>',o:['children','played','sunny','in','garden'],a:2,s:['<i>sunny</i> describes the garden.'],w:{0:'<i>children</i> is a noun.',1:'<i>played</i> is a verb.'}},
+{t:'How many adjectives are in this sentence?<br><i>The small brown puppy chewed my new trainers.</i>',o:['1','2','3','4','5'],a:2,s:['small, brown (the puppy)','new (the trainers)','That is 3.'],w:{1:'Don’t forget <i>new</i>.',3:'<i>chewed</i> is a verb, not an adjective.'}},
+{t:'Choose the best adjective to fill the gap.<br><i>We walked along the ______ beach.</i>',o:['sandy','sand','sandily','walked','quickly'],a:0,s:['We need a word that describes the beach.','<i>sandy</i> is the adjective.'],w:{1:'<i>sand</i> is a noun.',4:'<i>quickly</i> is an adverb.'}},
+{t:'Which word is <b>NOT</b> an adjective?',o:['huge','gentle','quickly','bright','clever'],a:2,s:['<i>quickly</i> is an adverb: it describes how something is done.','The others all describe nouns.']},
+{t:'Choose the correct word.<br><i>The magic show was ______.</i>',o:['amazed','amazing','amaze','amazement','amazes'],a:1,s:['The show <b>causes</b> the feeling: -ing.','The show was <b>amazing</b>; the audience was amazed.'],w:{0:'<i>amazed</i> is how a person feels.'}},
+{t:'Choose the correct word.<br><i>{N} was ______ when his team lost.</i>',o:['disappointing','disappointed','disappoint','disappointment','disappoints'],a:1,s:['How {N} <b>feels</b>: -ed.','The result was disappointing; {N} was <b>disappointed</b>.'],w:{0:'<i>disappointing</i> describes the result.',3:'<i>disappointment</i> is a noun.'}},
+{wide:1,t:'Which sentence is <b>correct</b>?',o:['I was very confusing by the question.','The maths puzzle was confused.','The long walk was tiring.','She felt boring at the party.','The teacher was annoying by the noise.'],a:2,s:['The walk <b>causes</b> the feeling: tiring.'],w:{0:'Should be <i>confused</i>.',1:'Should be <i>confusing</i>.',3:'Should be <i>bored</i>.',4:'Should be <i>annoyed</i>.'}},
+{t:'Choose the correct word.<br><i>The ending of the story was very ______. I didn’t expect it!</i>',o:['surprised','surprising','surprise','surprises','surprisingly'],a:1,s:['The ending causes the feeling: <b>surprising</b>.'],w:{0:'<i>surprised</i> is how I felt.',4:'<i>surprisingly</i> is an adverb.'}},
+{wide:1,t:'Which phrase has the adjectives in the <b>correct order</b>?',o:['a plastic blue bottle','a blue plastic bottle','a bottle blue plastic','plastic a blue bottle','a blue bottle plastic'],a:1,s:['Colour (blue) comes before material (plastic).']},
+{wide:1,t:'Which phrase has the adjectives in the <b>correct order</b>?',o:['a young tall man','a tall young man','a man tall young','a young man tall','tall a young man'],a:1,s:['Size (tall) comes before age (young).']},
+{wide:1,t:'Which phrase has the adjectives in the <b>correct order</b>?',o:['a wooden round lovely table','a round lovely wooden table','a lovely round wooden table','a lovely wooden round table','a round wooden lovely table'],a:2,s:['Opinion (lovely) → shape (round) → material (wooden).'],w:{1:'Opinion (lovely) comes first.',3:'Shape (round) comes before material (wooden).'}},
+{t:'In <i>a delicious hot Indian curry</i>, which adjective tells us the <b>origin</b> (where it comes from)?',o:['delicious','hot','Indian','curry','a'],a:2,s:['Origin = where something comes from: <b>Indian</b>.','<i>delicious</i> is opinion; <i>curry</i> is the noun.']},
+{wide:1,t:'Which phrase has the adjectives in the <b>correct order</b>?',o:['a brown big old leather bag','a big old brown leather bag','a leather big old brown bag','an old big brown leather bag','a big brown old leather bag'],a:1,s:['Size (big) → age (old) → colour (brown) → material (leather).'],w:{3:'Size comes before age.',4:'Age comes before colour.'}},
+{t:'Choose the correct word.<br><i>A cheetah is ______ than a horse.</i>',o:['fast','faster','fastest','more fast','most fastest'],a:1,s:['Comparing two animals with “than”: fast → <b>faster</b>.'],w:{2:'<i>fastest</i> is for three or more.'}},
+{t:'Choose the correct word.<br><i>Today is ______ than yesterday.</i>',o:['more hot','hotter','hottest','hoter','hot'],a:1,s:['Short word ending consonant-vowel-consonant: double the last letter.','hot → <b>hotter</b>'],w:{3:'Double the t: hotter.',0:'Short words add -er.'}},
+{t:'Choose the correct word.<br><i>My handwriting is ______ than it was last year.</i>',o:['gooder','better','best','more good','well'],a:1,s:['Irregular: good → <b>better</b> → best.'],w:{0:'<i>gooder</i> is not a word.',2:'<i>best</i> is the superlative.'}},
+{t:'What is the <b>comparative</b> of <i>careful</i>?',o:['carefuller','more careful','most careful','carefulest','carefully'],a:1,s:['Longer words use <b>more</b>: more careful.'],w:{2:'<i>most careful</i> is the superlative.',4:'<i>carefully</i> is an adverb.'}},
+{t:'Choose the correct word.<br><i>{N} is the ______ boy in the class.</i>',o:['funnier','funniest','most funniest','funnyest','funny'],a:1,s:['“the … in the class” = superlative.','funny → change y to i → <b>funniest</b>.'],w:{0:'<i>funnier</i> compares two.',2:'Never use “most” with -est.',3:'Change the y to i.'}},
+{t:'Choose the correct word.<br><i>This is the ______ film I have ever seen!</i>',o:['worse','worst','baddest','most bad','badder'],a:1,s:['Irregular: bad → worse → <b>worst</b>.'],w:{0:'<i>worse</i> is the comparative.'}},
+{wide:1,t:'Which sentence is <b>correct</b>?',o:['Gold is more expensiver than silver.','She is the cleverest girl in the team.','This is the most easiest test.','He is gooder at maths now.','My dog is biger than yours.'],a:1,s:['<i>cleverest</i> is a correct superlative.'],w:{0:'Should be <i>more expensive</i>.',2:'Should be <i>easiest</i>.',3:'Should be <i>better</i>.',4:'Double the g: bigger.'}},
+{t:'What is the <b>superlative</b> of <i>beautiful</i>?',o:['beautifullest','more beautiful','most beautiful','beautifuller','beautifully'],a:2,s:['Long words use <b>most</b> for superlatives.'],w:{1:'<i>more beautiful</i> is the comparative.'}},
+{p:1,t:'What was the shed door made of?',o:['silver','wood','metal','plastic','glass'],a:1,s:['“the creaky <b>wooden</b> door”'],w:{0:'The <b>box</b> was silver.'}},
+{p:1,t:'Which word from the passage is a <b>comparative</b> adjective?',o:['creaky','colder','happiest','dusty','shiny'],a:1,s:['“It was <b>colder</b> than she expected.” (cold → colder)'],w:{2:'<i>happiest</i> is a superlative.'}},
+{p:1,t:'In the passage, the word <i>happiest</i> is …',o:['a comparative adjective','a superlative adjective','a verb','a noun','an adverb'],a:1,s:['happy → happier → <b>happiest</b>']},
+{p:1,t:'How did Maya’s grandfather feel when she showed him the medal?',o:['angry','proud','scared','bored','confused'],a:1,s:['“Her grandfather smiled <b>proudly</b>.”']},
+{p:1,t:'Which adjective in the passage describes the <b>cloth</b>?',o:['soft','shiny','tiny','wooden','narrow'],a:0,s:['“wrapped in <b>soft</b> blue cloth”'],w:{1:'<i>shiny</i> describes the medal.',2:'<i>tiny</i> describes the box.'}}]}];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const fr=(n,d)=>`<span class="fr"><b>${n}</b><b>${d}</b></span>`;
+let S={name:'Neil',set:0,timer:0},sound=true;
+try{Object.assign(S,JSON.parse(localStorage.getItem('nenglish')||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem('nenglish',JSON.stringify({name:S.name,set:S.set,timer:S.timer,best:S.best}))}catch(e){}};
+const N=()=>esc(S.name||'Neil');
+const F=s=>String(s).replace(/\{N\}/g,N()).replace(/\{(\d+) (\d+)\/(\d+)\}/g,(_,w,n,d)=>`<span class="mx">${w}${fr(n,d)}</span>`).replace(/\{([\d?]+)\/([\d?]+)\}/g,(_,n,d)=>fr(n,d));
+const BREAKS=['10 star jumps!','Jog on the spot for 20 seconds','Do your best goal celebration','Touch your toes 10 times','Hold a goalkeeper crouch for 15 seconds','Dribble an imaginary ball round your chair 3 times'];
+const HALF=13;
+let ac=null;
+function beep(f,t=.12,type='square',delay=0){if(!sound)return;try{ac=ac||new AudioContext();const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.06,ac.currentTime+delay);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+delay+t);o.connect(g).connect(ac.destination);o.start(ac.currentTime+delay);o.stop(ac.currentTime+delay+t)}catch(e){}}
+const cheer=()=>{beep(523,.1,'square',0);beep(659,.1,'square',.1);beep(784,.25,'square',.2)};
+const groan=()=>{beep(220,.25,'sawtooth',0);beep(165,.35,'sawtooth',.2)};
+$('#snd').onclick=e=>{sound=!sound;e.target.textContent=sound?'Sound on':'Sound off';e.target.setAttribute('aria-pressed',sound)};
+$('#crowd').innerHTML=Array.from({length:150},(_,i)=>{const c=['#ff5a1f','#fff','#ffe14d','#7fd3ff','#ff9ad0','#c8f7a6'][i%6];return `<circle cx="${(i%50)*12+6+(Math.floor(i/50)%2)*6}" cy="${14+Math.floor(i/50)*16}" r="4.5" fill="${c}" fill-opacity=".8"/>`}).join('');
+$('#stripes').innerHTML=Array.from({length:6},(_,i)=>`<rect x="${i*100}" y="62" width="100" height="198" fill="var(--${i%2?'p1':'p2'})"/>`).join('');
+
+const card=$('#card');
+const SET=()=>SETS[S.set];
+function path(){const c=S.t0?Math.floor((Date.now()-S.t0)/1000):0,h=S.i==null?-1:S.i<HALF?0:1;
+  $('#path').innerHTML=`<span class="${S.t0?(h>0||S.ft?'done':'now'):''}">First half</span><span class="${S.ft?'done':h>0&&S.t0?'now':''}">Second half</span><span class="${S.ft?'done':''}">Full time</span><span class="clock">${S.t0?`Session ${Math.floor(c/60)}:${String(c%60).padStart(2,'0')}`:''}</span>`}
+setInterval(path,1000);
+function upd(){const st=SET();$('#lS').textContent=`${S.name} – ${st.rival}`;$('#sG').textContent=S.t0?`${S.goals}–${st.target}`:`0–${st.target}`;$('#sK').textContent=`${S.t0?S.i:0}/26`;$('#sS').textContent=S.t0?S.streak:0}
+function setup(){
+  stopTimer();resetScene();S.t0=0;S.ft=0;S.i=null;path();
+  card.innerHTML=`<h2>Choose your match</h2>
+  <div class="lab"><label for="nm">Player's name</label></div><input class="name" id="nm" maxlength="20" value="${N()}">
+  <div class="lab">Question set</div><div class="chips">${SETS.map((s,i)=>`<label class="chip"><input type="radio" name="set" value="${i}" ${S.set===i?'checked':''}><span>${s.name}: vs ${s.rival}</span></label>`).join('')}</div>
+  <div class="lab">Shot clock</div><div class="chips">${[[0,'No timer'],[60,'60 seconds'],[40,'40 seconds']].map(([v,l])=>`<label class="chip"><input type="radio" name="timer" value="${v}" ${S.timer===v?'checked':''}><span>${l}</span></label>`).join('')}</div>
+  <p class="hint" id="bl"></p>
+  <div class="row"><button class="go" id="kick">Kick off</button><button class="ghost" id="key">Answer key</button></div>`;
+  const bl=()=>{const b=(S.best||{})[S.set];$('#bl').textContent=`26 questions, with a stretch break at half-time. ${SET().rival} scored ${SET().target}: beat it!`+(b!=null?` Best so far: ${b}/26.`:'');upd()};bl();
+  card.querySelectorAll('input[type=radio]').forEach(i=>i.onchange=()=>{S[i.name]=+i.value;save();bl()});
+  $('#nm').oninput=e=>{S.name=e.target.value.trim()||'Neil';title();save();upd()};
+  $('#kick').onclick=()=>{Object.assign(S,{t0:Date.now(),ht:0,i:0,goals:0,streak:0,top:0,misses:[]});$('#kj').setAttribute('fill',SET().kit);beep(880,.08);next()};
+  $('#key').onclick=keyView;
+}
+function keyView(){
+  card.innerHTML=`<h2>${SET().name} answer key</h2><ol class="key">${SET().qs.map(q=>`<li><span>${F(q.b?q.b+' · '+q.t:q.t)}</span><b>${'ABCDE'[q.a]}: ${F(q.o[q.a])}</b></li>`).join('')}</ol><div class="row"><button class="go" id="bk">Back</button></div>`;
+  $('#bk').onclick=setup;window.scrollTo({top:card.offsetTop-10});
+}
+function next(){
+  if(S.i===HALF&&!S.ht){S.ht=1;return brk()}
+  if(S.i>=26)return full();
+  const q=SET().qs[S.i];S.q=q;S.locked=false;resetScene();upd();path();
+  card.innerHTML=`<p class="hint" style="margin:0 0 6px">Question ${S.i+1} of 26</p>${q.p?'':`<p class="q${q.b?'':' wp'}">${F(q.t)}</p>`}${q.b?`<div class="big">${F(q.b)}</div>`:''}${q.p?`<details class="pass" open><summary>Read the passage</summary><p>${F(SET().passage)}</p></details>`:''}
+  ${q.p?`<p class="q wp">${F(q.t)}</p>`:''}<div class="opts${q.wide?' wide':''}">${q.o.map((o,i)=>`<button class="opt" data-i="${i}"><span class="L">${'ABCDE'[i]}</span>${F(o)}</button>`).join('')}</div><div id="fbk"></div>`;
+  card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.i));
+  startTimer();
+}
+function answer(i){
+  if(S.locked)return;S.locked=true;stopTimer();
+  const q=S.q,good=i===q.a;S.i++;
+  card.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(j===q.a)b.classList.add('ok');else if(j===i)b.classList.add('no')});
+  if(good){S.goals++;S.streak++;S.top=Math.max(S.top,S.streak);cheer()}else{S.streak=0;groan();S.misses.push(q)}
+  shoot(good);upd();
+  const why=!good&&i!=null?((q.w&&q.w[i])||`The answer is ${'ABCDE'[q.a]}. Look at the working below.`):'';
+  $('#fbk').innerHTML=`<div class="fb ${good?'':'bad'}"><h3>${good?pick([`${N()} scores!`,'Back of the net!','Top corner!','What a strike!'])+(S.streak>2?` ${S.streak} in a row!`:''):(i==null?'Too slow, saved!':'Saved!')}</h3>
+  ${why?`<p class="why">${F(why)}</p>`:''}<ol>${q.s.map(s=>`<li>${F(s)}</li>`).join('')}</ol></div>
+  <div class="row"><button class="go" id="nx">${S.i>=26?'Final whistle':S.i===HALF?'Half-time':'Next kick'}</button></div>`;
+  $('#nx').onclick=next;$('#nx').focus({preventScroll:true});
+}
+let bt=null;
+function brk(){
+  stopTimer();resetScene();let left=60;
+  card.innerHTML=`<h2>Half-time: ${S.goals}–${SET().target}</h2><p class="q">${N()} needs ${Math.max(0,SET().target+1-S.goals)} more goals in the second half to win.</p><p class="task">${pick(BREAKS)}</p><div class="count" id="ct">60</div>
+  <div class="row"><button class="go" id="nx">Start the second half</button></div>`;
+  clearInterval(bt);bt=setInterval(()=>{left--;const c=$('#ct');if(!c){clearInterval(bt);return}c.textContent=left;if(left<=0){clearInterval(bt);c.textContent='Go!';beep(880,.2)}},1000);
+  $('#nx').onclick=()=>{clearInterval(bt);next()};$('#nx').focus({preventScroll:true});
+}
+function full(){
+  stopTimer();resetScene();S.ft=1;S.ht=0;path();const st=SET(),win=S.goals>st.target,draw=S.goals===st.target;
+  S.best=S.best||{};const prev=S.best[S.set];if(prev==null||S.goals>prev)S.best[S.set]=S.goals;save();
+  if(win){cheer();setTimeout(cheer,450)}
+  card.innerHTML=`${win?`<svg class="trophy" viewBox="0 0 200 200" aria-hidden="true"><path d="M55 30h90v40a45 45 0 0 1-90 0z" fill="var(--gold)"/><path d="M55 42H32a24 24 0 0 0 28 34M145 42h23a24 24 0 0 1-28 34" fill="none" stroke="var(--gold)" stroke-width="10"/><rect x="90" y="112" width="20" height="30" fill="#c99400"/><rect x="62" y="142" width="76" height="16" rx="4" fill="#c99400"/><rect x="50" y="158" width="100" height="24" rx="6" fill="#5b3a10"/></svg>`:''}
+  <h2>${win?`${N()} beats ${st.rival}!`:draw?`A draw with ${st.rival}!`:`${st.rival} win this time`}</h2><div class="res">${S.goals}/26</div>
+  <p class="hint">Longest streak: ${S.top} · ${Math.round((Date.now()-S.t0)/60000)} minutes${prev!=null&&S.goals>prev?' · New best!':''}</p>
+  ${S.misses.length?`<div class="lab">Practise these again</div><ul class="miss">${S.misses.map(q=>`<li><span>${F(q.b?q.b+' · '+q.t:q.t)}</span><b>→ ${F(q.o[q.a])}</b></li>`).join('')}</ul>`:''}
+  <div class="row"><button class="go" id="again">Play ${SETS[1-S.set].name}</button><button class="ghost" id="re">Replay ${st.name}</button><button class="ghost" id="hm">Menu</button></div>`;
+  $('#again').onclick=()=>{S.set=1-S.set;save();setup()};$('#re').onclick=setup;$('#hm').onclick=setup;
+}
+let tm=null,left=0;
+function startTimer(){if(!S.timer){$('#sT').textContent='–';$('#tb').style.width='100%';return}left=S.timer;tick();tm=setInterval(()=>{left--;tick();if(left<=5&&left>0)beep(440,.05);if(left<=0)answer(null)},1000)}
+function tick(){$('#sT').textContent=left+'s';$('#tb').style.width=left/S.timer*100+'%'}
+function stopTimer(){clearInterval(tm);tm=null;if(!S.timer)$('#sT').textContent='–'}
+function resetScene(){const b=$('#ball'),k=$('#keeper');b.style.transition=k.style.transition='none';b.style.transform=k.style.transform='';$('#msg').classList.remove('on');b.getBoundingClientRect();b.style.transition=k.style.transition=''}
+function shoot(good){
+  const c=pick([[-110,-160],[110,-160],[-115,-85],[115,-85]]),b=$('#ball'),k=$('#keeper'),m=$('#msg');
+  if(good){b.style.transform=`translate(${c[0]}px,${c[1]}px) scale(.7)`;k.style.transform=`translate(${c[0]>0?-60:60}px,8px) rotate(${c[0]>0?-70:70}deg)`;m.textContent='GOAL!'}
+  else{b.style.transform='translate(0px,-120px) scale(.75)';k.style.transform='translateY(-6px)';m.textContent='SAVED!'}
+  setTimeout(()=>m.classList.add('on'),350);
+}
+function title(){$('#title').textContent=`${S.name||'Neil'}'s English Match`}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT')return;
+  const n='abcde'.indexOf(e.key.toLowerCase()),d='12345'.indexOf(e.key),i=n>=0?n:d;
+  if(i>=0&&S.q&&!S.locked&&card.querySelector('.opt')){answer(i);return}
+  if(e.key==='Enter'){const b=$('#nx');if(b&&document.activeElement!==b){e.preventDefault();b.click()}}
+});
+title();setup();
+}
+</script>
+<script src="../../assets/results.js" defer></script>
+</body>
+</html>
